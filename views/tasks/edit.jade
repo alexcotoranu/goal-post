@@ -1,0 +1,36 @@
+extends ../layout
+
+block content
+	h1.
+		Task ID #{task._id}
+	form(action='/tasks/#{task._id}/edit',method='post',name='updatetask',enctype='multipart/form-data')
+		p Category Prefix:
+			input#inputCatprefix(type="text", value="#{task.catprefix}", name="catprefix")
+		p Id In Category:
+			input#inputIdincat(type="text", value="#{task.idincat}" name="idincat")
+		p Title: 
+			input#inputTitle(type="text", value="#{task.title}", name="title")
+		p Description:
+			input#inputDescription(type="text", value="#{task.description}", name="description")
+		p Created:
+			input#inputCreated(type="date", value="#{taskcreated}", name="created")
+		p Updated:
+			input#inputUpdated(type="date", value="#{task.updated}", name="updated")
+		p Completed:
+			input#inputCompleted(type="date", value="#{task.completed}", name="completed")
+		p Status:
+			input#inputStatus(type="text", value="#{task.status}" name="status")
+		p Progress:
+			input#inputProgress(type="text", value="#{task.progress}", name="progress")
+		p Priority:
+			input#inputPriority(type="text", value="#{task.priority}", name="priority")
+		p Difficulty:
+			input#inputDifficulty(type="text", value="#{task.difficulty}", name="difficulty")
+		p Image:
+			input#inputImg(type="file", value="#{task.img.name}.#{task.img.extension}", name="img")
+		//- TODO: this needs to be changed to display thumbnails for all attachments and allow them to be selected and edited
+		p
+			input(type='hidden',value='PUT',name='_method')
+		p
+			button#btnSubmit(type="submit").
+				Update
