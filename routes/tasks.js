@@ -64,7 +64,8 @@ router.route('/')
         var idincat = req.body.idincat;
         var title = req.body.title;
         var description = req.body.description;
-        var created = req.body.created;
+        // var created = req.body.created;
+        var created = new Date();
         var updated = req.body.updated;
         var completed = req.body.completed;
         var status = req.body.status;
