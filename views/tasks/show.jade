@@ -12,5 +12,7 @@ block content
     p progress: #{task.progress}
     p priority: #{task.priority}
     p difficulty: #{task.difficulty}
-    img(src= '../images/' + task.img)
+    -if (typeof(task.img) !== 'undefined'){
+        img(src="../images/" + task.img)
+    -}
     //- TODO: make a loop for multiple images to be loaded here

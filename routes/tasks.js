@@ -64,36 +64,20 @@ router.route('/')
             // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
           });
         } else { 
-          var img = null 
+          var img = null;
         };
 
-        var catprefix = req.body.catprefix;
-        var idincat = req.body.idincat;
-        var title = req.body.title;
-        var description = req.body.description;
-        // var created = req.body.created;
-        var created = new Date();
-        var updated = req.body.updated;
-        var completed = req.body.completed;
-        var status = req.body.status;
-        var progress = req.body.progress;
-        var priority = req.body.priority;
-        var difficulty = req.body.difficulty;
+
+        var changedFields = {};
+
+        for (var name in req.body) {
+          console.log("-------------");
+          console.log(name + ": " + req.body[name]);
+          changedFields[name] = req.body[name];
+        }
+
         // TODO: loop through all images
 
-        var changedFields = {
-          catprefix : catprefix,
-          idincat : idincat,
-          title : title,
-          description : description,
-          created : created,
-          updated : updated,
-          completed : completed,
-          status : status,
-          progress : progress,
-          priority : priority,
-          difficulty : difficulty
-        };
         //if an image is uploaded, save it as well
         if (img != null) {
           changedFields.img = img;
@@ -216,6 +200,7 @@ router.route('/:id/edit')
 	//PUT to update a task by ID
 	.put(function(req, res) {
       //if image is uploaded
+      console.log(req.files.img);
       if (req.files.img != undefined) { 
         var img = req.files.img.name;
         // TODO: loop through all images
@@ -228,35 +213,19 @@ router.route('/:id/edit')
           // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
         });
       } else { 
-        var img = null 
+        var img = null;
       };
       
 	    // Get our REST or form values. These rely on the "name" attributes
-	    var catprefix = req.body.catprefix;
-      var idincat = req.body.idincat;
-      var title = req.body.title;
-      var description = req.body.description;
-      var created = req.body.created;
-      var updated = req.body.updated;
-      var completed = req.body.completed;
-      var status = req.body.status;
-      var progress = req.body.progress;
-      var priority = req.body.priority;
-      var difficulty = req.body.difficulty;
-      
-      var changedFields = {
-        catprefix : catprefix,
-        idincat : idincat,
-        title : title,
-        description : description,
-        created : created,
-        updated : updated,
-        completed : completed,
-        status : status,
-        progress : progress,
-        priority : priority,
-        difficulty : difficulty
-      };
+	    
+      var changedFields = {};
+
+      for (var name in req.body) {
+        console.log("-------------");
+        console.log(name + ": " + req.body[name]);
+        changedFields[name] = req.body[name];
+      }
+
       //if an image is uploaded, save it as well
       if (img != null) {
         changedFields.img = img;
