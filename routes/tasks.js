@@ -51,14 +51,21 @@ router.route('/')
         console.log(req.body); //should be all the text
         console.log(req.files); //should be all the files
 
-        //save the image
-        var tmp_path = req.files.img.path;
-        var target_path = './public/images/' + req.files.img.name;
+        //if image is uploaded
+        if (req.files.img != undefined) { 
+          var img = req.files.img.name;
+          // TODO: loop through all images
+          //save the image
+          var tmp_path = req.files.img.path;
+          var target_path = './public/images/' + req.files.img.name;
 
-        fs.rename(tmp_path, target_path, function(err) {
-          if (err) throw err;
-          // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
-        });
+          fs.rename(tmp_path, target_path, function(err) {
+            if (err) throw err;
+            // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
+          });
+        } else { 
+          var img = null 
+        };
 
         var catprefix = req.body.catprefix;
         var idincat = req.body.idincat;
@@ -72,25 +79,28 @@ router.route('/')
         var progress = req.body.progress;
         var priority = req.body.priority;
         var difficulty = req.body.difficulty;
-        var img = req.files.img.name;
         // TODO: loop through all images
 
+        var changedFields = {
+          catprefix : catprefix,
+          idincat : idincat,
+          title : title,
+          description : description,
+          created : created,
+          updated : updated,
+          completed : completed,
+          status : status,
+          progress : progress,
+          priority : priority,
+          difficulty : difficulty
+        };
+        //if an image is uploaded, save it as well
+        if (img != null) {
+          changedFields.img = img;
+        }
+
         //call the create function for our database
-        mongoose.model('Task').create({
-            catprefix : catprefix,
-            idincat : idincat,
-            title : title,
-            description : description,
-            created : created,
-            updated : updated,
-            completed : completed,
-            status : status,
-            progress : progress,
-            priority : priority,
-            difficulty : difficulty,
-            img : img
-            // TODO: loop through all images
-        }, function (err, task) {
+        mongoose.model('Task').create(changedFields, function (err, task) {
               if (err) {
                   res.send("There was a problem adding the information to the database.");
               } else {
@@ -205,6 +215,22 @@ router.route('/:id/edit')
 	})
 	//PUT to update a task by ID
 	.put(function(req, res) {
+      //if image is uploaded
+      if (req.files.img != undefined) { 
+        var img = req.files.img.name;
+        // TODO: loop through all images
+        //save the image
+        var tmp_path = req.files.img.path;
+        var target_path = './public/images/' + req.files.img.name;
+
+        fs.rename(tmp_path, target_path, function(err) {
+          if (err) throw err;
+          // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
+        });
+      } else { 
+        var img = null 
+      };
+      
 	    // Get our REST or form values. These rely on the "name" attributes
 	    var catprefix = req.body.catprefix;
       var idincat = req.body.idincat;
@@ -217,27 +243,30 @@ router.route('/:id/edit')
       var progress = req.body.progress;
       var priority = req.body.priority;
       var difficulty = req.body.difficulty;
-      var img = req.files.img.name;
-      // TODO: loop through all images
-
+      
+      var changedFields = {
+        catprefix : catprefix,
+        idincat : idincat,
+        title : title,
+        description : description,
+        created : created,
+        updated : updated,
+        completed : completed,
+        status : status,
+        progress : progress,
+        priority : priority,
+        difficulty : difficulty
+      };
+      //if an image is uploaded, save it as well
+      if (img != null) {
+        changedFields.img = img;
+      }
+      
+      //update it    
 	    //find the document by ID
 	    mongoose.model('Task').findById(req.id, function (err, task) {
 	        //update it
-	        task.update({
-	            catprefix : catprefix,
-              idincat : idincat,
-              title : title,
-              description : description,
-              created : created,
-              updated : updated,
-              completed : completed,
-              status : status,
-              progress : progress,
-              priority : priority,
-              difficulty : difficulty,
-              img : img.name
-              // TODO: loop through all images
-	        }, function (err, taskID) {
+	        task.update(changedFields, function (err, taskID) {
 	          if (err) {
 	              res.send("There was a problem updating the information to the database: " + err);
 	          } 
