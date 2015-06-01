@@ -9,7 +9,9 @@ block content
                 a(href='/tasks/#{task._id}') #{task.catprefix} - #{task.idincat}
                 p #{task.title}
                 p #{task.created}
-                img(src="../images/" + task.img)
+                -if (typeof(task.img) !== 'undefined'){
+                    img(src="../images/" + task.img)
+                -}
                 //- TODO: make this loop and show all the images
                 form(action='/tasks/#{task._id}/edit',method='post',enctype='application/x-www-form-urlencoded')
                     input(type='hidden',value='DELETE',name='_method')

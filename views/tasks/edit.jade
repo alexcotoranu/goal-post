@@ -26,8 +26,9 @@ block content
 			input#inputPriority(type="text", value="#{task.priority}", name="priority")
 		p Difficulty:
 			input#inputDifficulty(type="text", value="#{task.difficulty}", name="difficulty")
+		//- img(src="#{task.img.name}")
 		p Image:
-			input#inputImg(type="file", value="#{task.img.name}.#{task.img.extension}", name="img")
+			input#inputImg(type="file", name="img")
 		//- TODO: this needs to be changed to display thumbnails for all attachments and allow them to be selected and edited
 		p
 			input(type='hidden',value='PUT',name='_method')
