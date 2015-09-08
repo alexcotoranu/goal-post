@@ -2,12 +2,20 @@ extends ../layout
 
 block content
     //- p #{task._id}
+    -if (task.completed !== null && typeof(task.completed) !== 'undefined'){
+        p(class='task-complete') Completed
+    -}
     h1 #{task.catprefix}-#{task.idincat}
     p #{task.title}
     p #{task.description}
     p created: #{taskcreated}
-    p updated: #{task.updated}
-    p completed: #{task.completed}
+    p target date: #{tasktarget}
+    -if (typeof(task.updated) !== 'undefined'){
+        p updated: #{task.updated}
+    -}
+    -if (typeof(task.completed) !== 'undefined'){
+        p completed: #{task.completed}
+    -}
     p status: #{task.status}
     p progress: #{task.progress}
     p priority: #{task.priority}

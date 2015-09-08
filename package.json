@@ -1,6 +1,6 @@
 {
   "name": "goal-post",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
@@ -14,6 +14,7 @@
     "gridfs-stream": "^1.1.1",
     "jade": "~1.9.2",
     "method-override": "^2.3.3",
+    "moment": "^2.10.3",
     "mongoose": "^4.0.3",
     "morgan": "~1.5.3",
     "multer": "^0.1.8",

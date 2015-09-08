@@ -6,3 +6,23 @@ body {
 a {
   color: #00B7FF;
 }
+
+.task-complete {
+	padding:3px;
+	background-color:green;
+	color:white;
+	display:inline-block;
+	margin-right:10px;
+	border-radius:4px;
+}
+
+#cal_table {
+	width:500px;
+	height:350px;
+	border:1px solid #e4e4e4;
+	border-collapse: collapse;
+}
+
+#cal_table th {
+	background-color:#e0e3e6;
+}

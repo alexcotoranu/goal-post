@@ -12,9 +12,9 @@ block content
             -}
         p Id In Category:
             -if (typeof(task.idincat) !== 'undefined'){
-                input#inputIdincat(type="text", value="#{task.idincat}" name="idincat")
+                input#inputIdincat(type="text", value="#{task.idincat}", name="idincat")
             -} else {
-                input#inputIdincat(type="text", placeholder="ex. 1" name="idincat")
+                input#inputIdincat(type="text", placeholder="ex. 1", name="idincat")
             -}
         p Title:
             -if (typeof(task.title) !== 'undefined'){
@@ -28,11 +28,13 @@ block content
             -} else {
                 input#inputDescription(type="text", placeholder="ex. Change the colour scheme.", name="description")
             -}
+        p Target Date: 
+            input#inputTarget(type="date", value="#{tasktarget}", name="target")
         p Status:
             -if (typeof(task.status) !== 'undefined'){
-                input#inputStatus(type="text", value="#{task.status}" name="status")
+                input#inputStatus(type="text", value="#{task.status}", name="status")
             -} else {
-                input#inputStatus(type="text", placeholder="ex. in-progress" name="status")
+                input#inputStatus(type="text", placeholder="ex. in-progress", name="status")
             -}
         p Progress:
             -if (typeof(task.progress) !== 'undefined'){

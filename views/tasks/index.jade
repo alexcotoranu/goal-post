@@ -6,12 +6,21 @@ block content
     ul
         - each task, i in tasks
             li
+                -if (task.completed !== null && typeof(task.completed) !== 'undefined'){
+                    p(class='task-complete') Complete 
+                -}
                 a(href='/tasks/#{task._id}') #{task.catprefix} - #{task.idincat}
+                -if (task.target !== undefined){
+                    p Target Date: #{task.target}
+                -}
+                -if (task.completed !== null){
+                    p Date Completed: #{task.completed}
+                -}
                 p #{task.title}
                 p #{task.created}
                 -if (typeof(task.img) !== 'undefined'){
                     img(src="../images/" + task.img)
-                -}
+                -}  
                 //- TODO: make this loop and show all the images
                 form(action='/tasks/#{task._id}/edit',method='post',enctype='application/x-www-form-urlencoded')
                     input(type='hidden',value='DELETE',name='_method')

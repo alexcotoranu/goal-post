@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var multer  = require('multer');
+var moment = require('moment');
 
 var db = require('./model/db');
 var blob = require('./model/blobs');
@@ -14,6 +15,7 @@ var routes = require('./routes/index');
 var blobs = require('./routes/blobs');
 var tasks = require('./routes/tasks');
 var users = require('./routes/users');
+var calendar = require('./routes/calendar');
 
 var app = express();
 
@@ -44,6 +46,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/blobs', blobs);
 app.use('/tasks', tasks);
+app.use('/calendar', calendar);
 app.use('/users', users);
 
 // catch 404 and forward to error handler

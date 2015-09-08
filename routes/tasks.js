@@ -29,6 +29,7 @@ router.route('/')
                   return console.error(err);
               } else {
                   //respond to both HTML and JSON. JSON responses require 'Accept: application/json;' in the Request Header
+                  console.log(tasks);
                   res.format({
                       //HTML response will render the index.jade file in the views/tasks folder. We are also setting "tasks" to be an accessible variable in our jade view
                     html: function(){
@@ -71,10 +72,15 @@ router.route('/')
         var changedFields = {};
 
         for (var name in req.body) {
-          console.log("-------------");
-          console.log(name + ": " + req.body[name]);
-          changedFields[name] = req.body[name];
+        console.log("-------------");
+        console.log(name + ": " + req.body[name]);
+        changedFields[name] = req.body[name];
+        if (name == 'progress' && req.body[name] == '100'){
+          changedFields.completed = new Date();
+        } else if (name == 'progress' && req.body[name] !== '100') {
+          changedFields.completed = null;
         }
+      }
 
         // TODO: loop through all images
 
@@ -82,6 +88,9 @@ router.route('/')
         if (img != null) {
           changedFields.img = img;
         }
+
+        //add the date for creation
+        changedFields.created = new Date();
 
         //call the create function for our database
         mongoose.model('Task').create(changedFields, function (err, task) {
@@ -152,11 +161,14 @@ router.route('/:id')
         console.log('GET Retrieving ID: ' + task._id);
         console.log('For task: ' + task);
         var taskcreated = task.created.toISOString();
-        taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'))
+        taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+        var tasktarget = task.target.toISOString();
+        tasktarget = tasktarget.substring(0, tasktarget.indexOf('T'));
         res.format({
           html: function(){
               res.render('tasks/show', {
                 "taskcreated" : taskcreated,
+                "tasktarget" : tasktarget,
                 "task" : task
               });
           },
@@ -179,13 +191,16 @@ router.route('/:id/edit')
 	            //Return the task
 	            console.log('GET Retrieving ID: ' + task._id);
               var taskcreated = task.created.toISOString();
-              taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'))
+              taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+              var tasktarget = task.target.toISOString();
+              tasktarget = tasktarget.substring(0, tasktarget.indexOf('T'));
 	            res.format({
 	                //HTML response will render the 'edit.jade' template
 	                html: function(){
 	                       res.render('tasks/edit', {
 	                          title: 'Task' + task._id,
                             "taskcreated" : taskcreated,
+                            "tasktarget" : tasktarget,
 	                          "task" : task
 	                      });
 	                 },
@@ -224,6 +239,11 @@ router.route('/:id/edit')
         console.log("-------------");
         console.log(name + ": " + req.body[name]);
         changedFields[name] = req.body[name];
+        if (name == 'progress' && req.body[name] == '100'){
+          changedFields.completed = new Date();
+        } else if (name == 'progress' && req.body[name] !== '100') {
+          changedFields.completed = null;
+        }
       }
 
       //if an image is uploaded, save it as well
@@ -285,5 +305,32 @@ router.route('/:id/edit')
 	        }
 	    });
 	});
+router.route('/:id')
+  .get(function(req, res) {
+    mongoose.model('Task').findById(req.id, function (err, task) {
+      if (err) {
+        console.log('GET Error: There was a problem retrieving: ' + err);
+      } else {
+        console.log('GET Retrieving ID: ' + task._id);
+        console.log('For task: ' + task);
+        var taskcreated = task.created.toISOString();
+        taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+        var tasktarget = task.target.toISOString();
+        tasktarget = tasktarget.substring(0, tasktarget.indexOf('T'));
+        res.format({
+          html: function(){
+              res.render('tasks/show', {
+                "taskcreated" : taskcreated,
+                "tasktarget" : tasktarget,
+                "task" : task
+              });
+          },
+          json: function(){
+              res.json(task);
+          }
+        });
+      }
+    });
+  });
 
 module.exports = router;
