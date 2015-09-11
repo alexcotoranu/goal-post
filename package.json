@@ -1,7 +1,7 @@
 {
   "name": "goal-post",
   "version": "1.0.2",
-  "description": "OpenShift Sample Application",
+  "description": "Track your goals and achieve them.",
   "keywords": [
     "OpenShift",
     "Node.js",
@@ -9,14 +9,14 @@
     "openshift"
   ],
   "author": {
-    "name": "OpenShift",
-    "email": "ramr@example.org",
-    "url": "http://www.openshift.com/"
+    "name": "alexcotoranu",
+    "email": "",
+    "url": "http://alexcotoranu.com"
   },
-  "homepage": "http://www.openshift.com/",
+  "homepage": "http://alexcotoranu/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/openshift/origin-server"
+    "url": "https://github.com/alexcotoranu/goal-post"
   },
   "engines": {
     "node": ">= 0.6.0",
