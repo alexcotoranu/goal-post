@@ -3,6 +3,12 @@ extends ../layout
 block content
     h1.
          #{title}
+
+    ul
+        each task, i in tasks
+            li
+                p #{task.title}
+                p #{task.description}
     //- ul
     //-     each task, i in tasks
     //-         li
