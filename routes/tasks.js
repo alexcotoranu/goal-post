@@ -108,18 +108,67 @@ router.get('/new', function(req, res) {
     res.render('tasks/new', { title: 'Add New Task' });
 });
 
-
-
-
 // route middleware to validate :id
 router.param('id', function(req, res, next, id) {
     // find the ID in the database
+    r.table('tasks').get(req.params.id).run(connection, function(err, task) {
+        // if (err) throw err;
+        // console.log(callback);
+        // cursor.toArray(function(err, result) {
+            if (err) {
+                console.log(id + ' was not found');
+                res.status(404)
+                var err = new Error('Not Found');
+                err.status = 404;
+                res.format({
+                    html: function(){
+                        next(err);
+                    },
+                    json: function(){
+                        res.json({message : err.status  + ' ' + err});
+                    }
+                });
+            //if it is found we continue on
+            } else {
+                //uncomment this next line if you want to see every JSON document response for every GET/PUT/DELETE call
+                console.log(task);
+                // once validation is done save the new item in the req
+                req.id = id;
+                // go to the next thing
+                next();
+            }
+        });
+    // });
 });
 
 /* GET individual task */
 router.route('/:id')
     .get(function(req, res) {
+        console.log(req.params.id);
         //individual task will be loaded here
+        r.table('tasks').get(req.params.id).run(connection, function(err, task) {
+            // if (err) throw err;
+            // cursor.toArray(function(err, task) {
+                if (err) {
+                    throw err;
+                } else {
+                    console.log('For task: ' + task);
+                    var taskcreated = task.created.toISOString();
+                    taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+                    res.format({
+                        html: function(){
+                            res.render('tasks/show', {
+                                "taskcreated" : taskcreated,
+                                "task" : task
+                            });
+                        },
+                        json: function(){
+                            res.json(task);
+                        }
+                    });
+                }
+            // });
+        });
     });
 
 /* Edit existing task */

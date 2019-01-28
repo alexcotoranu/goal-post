@@ -6,9 +6,10 @@ block content
 
     ul
         each task, i in tasks
-            li
-                p #{task.title}
-                p #{task.description}
+            li(id=task.id)
+                a(href='/tasks/'+task.id)
+                    p #{task.title}
+                    p #{task.description}
     //- ul
     //-     each task, i in tasks
     //-         li
