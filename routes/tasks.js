@@ -5,6 +5,7 @@ var express = require('express'),
     methodOverride = require('method-override'); //used to manipulate POST
     multer = require('multer'); // used to upload files
 
+//TODO: See if this connection can be made global
 var connection = null;
 r.connect( {host: 'localhost', port: 28015}, function(err, conn) {
     if (err) throw err;
@@ -58,7 +59,48 @@ router.route('/')
     .post(function(req, res) {
         /* POST new task */
         console.log(req.body); //should be all the text
-        console.log(req.files); //should be all the files
+        // console.log(req.files); //should be all the files
+
+        var changedFields = {};
+
+        for (var name in req.body) {
+            console.log("-------------");
+            console.log(name + ": " + req.body[name]);
+            changedFields[name] = req.body[name];
+            if (name == 'progress' && req.body[name] == '100'){
+                changedFields.completed = new Date();
+            } else if (name == 'progress' && req.body[name] !== '100') {
+                changedFields.completed = null;
+            }
+        }
+
+        //add the date for creation
+        changedFields.created = new Date();
+
+        console.log(changedFields);
+
+        r.table('tasks').insert(changedFields).run(connection, function(err, cursor)
+        {
+            if (err) {
+                throw err;
+            } else {
+                console.log(cursor);
+                //Task has been created
+                res.format({
+                    //HTML response will set the location and redirect back to the home page.
+                    'text/html': function(){
+                         // If it worked, set the header so the address bar doesn't still say /adduser
+                         res.location("tasks");
+                         // And forward to success page
+                         res.redirect("/tasks");
+                    },
+                    //JSON response will show the newly created task
+                    'application/json': function(){
+                        res.json(cursor);
+                    }
+                });
+            }
+        });
     });
 
 /* GET new task form */

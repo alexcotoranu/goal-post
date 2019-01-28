@@ -2,7 +2,8 @@ extends ../layout
 
 block content
 	p #{title}
-	form#formAddTask(name="addtask",method="post",action="/tasks", enctype='multipart/form-data')
+	//- form#formAddTask(name="addtask",method="post",action="/tasks", enctype='multipart/form-data') // TODO: make multipart work when adding files
+	form#formAddTask(name="addtask",method="post",action="/tasks", enctype='application/json')
 		//- p Category Prefix:
 		//- 	input#inputCatprefix(type="text", placeholder="eg. PRJ", name="catprefix")
 		//- p Id In Category:
