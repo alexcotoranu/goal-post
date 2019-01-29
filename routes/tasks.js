@@ -58,7 +58,7 @@ router.route('/')
     })
     .post(function(req, res) {
         /* POST new task */
-        console.log(req.body); //should be all the text
+        // console.log(req.body); //should be all the text
         // console.log(req.files); //should be all the files
 
         var changedFields = {};
@@ -112,75 +112,150 @@ router.get('/new', function(req, res) {
 router.param('id', function(req, res, next, id) {
     // find the ID in the database
     r.table('tasks').get(req.params.id).run(connection, function(err, task) {
-        // if (err) throw err;
-        // console.log(callback);
-        // cursor.toArray(function(err, result) {
-            if (err) {
-                console.log(id + ' was not found');
-                res.status(404)
-                var err = new Error('Not Found');
-                err.status = 404;
-                res.format({
-                    html: function(){
-                        next(err);
-                    },
-                    json: function(){
-                        res.json({message : err.status  + ' ' + err});
-                    }
-                });
-            //if it is found we continue on
-            } else {
-                //uncomment this next line if you want to see every JSON document response for every GET/PUT/DELETE call
-                console.log(task);
-                // once validation is done save the new item in the req
-                req.id = id;
-                // go to the next thing
-                next();
-            }
-        });
-    // });
+        if (err) {
+            console.log(id + ' was not found');
+            res.status(404)
+            var err = new Error('Not Found');
+            err.status = 404;
+            res.format({
+                html: function(){
+                    next(err);
+                },
+                json: function(){
+                    res.json({message : err.status  + ' ' + err});
+                }
+            });
+        //if it is found we continue on
+        } else {
+            console.log(task);
+            // once validation is done save the new item in the req
+            req.id = id;
+            next();
+        }
+    });
 });
 
 /* GET individual task */
 router.route('/:id')
     .get(function(req, res) {
         console.log(req.params.id);
-        //individual task will be loaded here
+        //an individual task will be loaded here
         r.table('tasks').get(req.params.id).run(connection, function(err, task) {
-            // if (err) throw err;
-            // cursor.toArray(function(err, task) {
-                if (err) {
-                    throw err;
-                } else {
-                    console.log('For task: ' + task);
-                    var taskcreated = task.created.toISOString();
-                    taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
-                    res.format({
-                        html: function(){
-                            res.render('tasks/show', {
-                                "taskcreated" : taskcreated,
-                                "task" : task
-                            });
-                        },
-                        json: function(){
-                            res.json(task);
-                        }
-                    });
+            if (err) {
+                throw err;
+            } else {
+                console.log('Validating task: ' + task.id);
+                console.log(task.id);
+                if (!task.created) {
+                    task.created = new Date(); //hacky TODO: find a better solution
                 }
-            // });
+                var taskcreated = task.created.toISOString();
+                taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+                res.format({
+                    html: function(){
+                        res.render('tasks/show', {
+                            "taskcreated" : taskcreated,
+                            "task" : task
+                        });
+                    },
+                    json: function(){
+                        res.json(task);
+                    }
+                });
+            }
         });
     });
 
 /* Edit existing task */
 router.route('/:id/edit')
     .get(function(req, res) {
-       //individual task will be loaded here 
+        //individual task will be loaded here
+        r.table('tasks').get(req.params.id).run(connection, function(err, task) {
+            if (err) {
+                throw err;
+            } else {
+                console.log('Editing task: ' + task.id);
+                console.log(task.id);
+                if (!task.created) {
+                    task.created = new Date(); //hacky TODO: find a better solution
+                }
+                var taskcreated = task.created.toISOString();
+                taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+                res.format({
+                    html: function(){
+                        res.render('tasks/edit', {
+                            "task" : task
+                        });
+                    },
+                    json: function(){
+                        res.json(task);
+                    }
+                });
+            }
+        });
     })
     .put(function(req, res) {
         //individual task will be updated here
+        var changedFields = {};
+
+        for (var name in req.body) {
+            console.log("-------------");
+            console.log(name + ": " + req.body[name]);
+            changedFields[name] = req.body[name];
+            if (name == 'progress' && req.body[name] == '100'){
+                changedFields.completed = new Date();
+            } else if (name == 'progress' && req.body[name] !== '100') {
+                changedFields.completed = null;
+            }
+        }
+        // console.log (changedFields);
+        r.table('tasks').get(req.params.id).update(changedFields).run(connection, function(err, callback)
+        {
+            if (err) {
+                throw err;
+            } else {
+                //Task has been updated
+                res.format({
+                    //HTML response will set the location and redirect back to the home page.
+                    'text/html': function(){
+                        console.log(req.params.id);
+                         // If it worked, set the header so the address bar doesn't still say /adduser
+                         res.location("tasks/" + req.params.id);
+                         // And forward to success page
+                         res.redirect("/tasks/" + req.params.id);
+                    },
+                    //JSON response will show the callback report of the updated task
+                    'application/json': function(){
+                        res.json(callback);
+                    }
+                });
+            }
+        });
     })
     .delete(function (req, res){
         // delete a specific task
+        r.table('tasks').get(req.params.id).delete().run(connection, function(err, callback)
+        {
+            if (err) {
+                throw err;
+            } else {
+                //Task has been deleted
+                res.format({
+                    //HTML response will set the location and redirect back to the home page.
+                    'text/html': function(){
+                        console.log(req.params.id);
+                         // If it worked, set the header so the address bar doesn't still say /adduser
+                         res.location("tasks");
+                         // And forward to success page
+                         res.redirect("/tasks/");
+                    },
+                    //JSON response will show the callback report of the updated task
+                    'application/json': function(){
+                        res.json(callback);
+                    }
+                });
+            }
+        });
     });
 
 module.exports = router;

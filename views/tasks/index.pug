@@ -5,10 +5,12 @@ block content
          #{title}
 
     ul
+        li 
+            a(href='/tasks/new') New Task
         each task, i in tasks
             li(id=task.id)
                 a(href='/tasks/'+task.id)
-                    p #{task.title}
+                    h2 #{task.title}
                     p #{task.description}
     //- ul
     //-     each task, i in tasks
