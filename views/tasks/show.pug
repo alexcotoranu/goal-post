@@ -9,7 +9,12 @@ block content
     p #{task.title}
     p #{task.description}
     p created: #{taskcreated}
-    //- p target date: #{tasktarget}
+    - if (typeof(task.startdate) !== 'undefined'){
+        p start date: #{task.startdate}
+    -}
+    - if (typeof(task.enddate) !== 'undefined'){
+        p end date: #{task.enddate}
+    -}
     //- -if (typeof(task.updated) !== 'undefined'){
     //-     p updated: #{task.updated}
     //- -}

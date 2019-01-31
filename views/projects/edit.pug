@@ -1,0 +1,73 @@
+extends ../layout
+
+block content
+    h1.
+        project ID #{project.id}
+    //- form(action='/projects/'+ project.id +'/edit',method='post',name='updateproject',enctype='multipart/form-data')
+    form(action='/projects/'+ project.id +'/edit',method='post',name='updateproject',enctype='application/json')
+        //- p Category Prefix:
+        //-     -if (typeof(project.catprefix) !== 'undefined'){
+        //-         input#inputCatprefix(type="text", value="#{project.catprefix}", name="catprefix")
+        //-     -} else {
+        //-         input#inputCatprefix(type="text", placeholder="eg. PRJ", name="catprefix")
+        //-     -}
+        //- p Id In Category:
+        //-     -if (typeof(project.idincat) !== 'undefined'){
+        //-         input#inputIdincat(type="text", value="#{project.idincat}", name="idincat")
+        //-     -} else {
+        //-         input#inputIdincat(type="text", placeholder="ex. 1", name="idincat")
+        //-     -}
+        p Title:
+            -if (typeof(project.title) !== 'undefined'){
+                input#inputTitle(type="text", value=project.title, name="title")
+            -} else {
+                input#inputTitle(type="text", placeholder="ex. Re-style header", name="title")
+            -}
+        p Description:
+            -if (typeof(project.description) !== 'undefined'){
+                input#inputDescription(type="text", value=project.description, name="description")
+            -} else {
+                input#inputDescription(type="text", placeholder="ex. Change the colour scheme.", name="description")
+            -}
+        //- p Target Date: 
+            input#inputTarget(type="date", value="#{projecttarget}", name="target")
+        //- p Status:
+        //-     -if (typeof(project.status) !== 'undefined'){
+        //-         input#inputStatus(type="text", value="#{project.status}", name="status")
+        //-     -} else {
+        //-         input#inputStatus(type="text", placeholder="ex. in-progress", name="status")
+        //-     -}
+        //- p Progress:
+        //-     -if (typeof(project.progress) !== 'undefined'){
+        //-         input#inputProgress(type="text", value="#{project.progress}", name="progress")
+        //-     -} else {
+        //-         input#inputProgress(type="text", placeholder="ex. 50", name="progress")
+        //-     -}
+        //- p Priority:
+        //-     -if (typeof(project.priority) !== 'undefined'){
+        //-         input#inputPriority(type="text", value="#{project.priority}", name="priority")
+        //-     -} else {
+        //-         input#inputPriority(type="text", placeholder="ex. 1", name="priority")
+        //-     -}
+        //- p Difficulty:
+        //-     -if (typeof(project.difficulty) !== 'undefined'){
+        //-         input#inputDifficulty(type="text", value="#{project.difficulty}", name="difficulty")
+        //-     -} else {
+        //-         input#inputDifficulty(type="text", placeholder="ex. easy", name="difficulty")
+        //-     -}
+        //- img(src="#{project.img.name}")
+        //- p Image:
+        //-     input#inputImg(type="file", name="img")
+        //- TODO: this needs to be changed to display thumbnails for all attachments and allow them to be selected and edited
+        p
+            input(type='hidden',value='PUT',name='_method')
+        p
+            button#btnSubmit(type="submit").
+                Update
+    
+    form(action='/projects/'+ project.id +'/edit',method='post',name='deleteproject',enctype='application/json')
+        p
+            input(type='hidden',value='DELETE',name='_method')
+        p
+            button#btnSubmit(type="submit").
+                Delete

@@ -1,0 +1,14 @@
+extends ../layout
+
+block content
+    h1.
+         #{title}
+
+    ul
+        li 
+            a(href='/projects/new') New project
+        each project, i in projects
+            li(id=project.id)
+                a(href='/projects/'+project.id)
+                    h2 #{project.title}
+                    p #{project.description}

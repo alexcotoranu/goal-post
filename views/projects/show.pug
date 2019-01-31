@@ -1,0 +1,29 @@
+extends ../layout
+
+block content
+    p #{project.title}
+    p #{project.description}
+    p created: #{projectcreated}
+
+    h2 Tasks:
+    
+    form#formAddTask(name="addtask",method="post",action="/tasks", enctype='application/json')
+        p Title:
+            input#inputTitle(type="text", placeholder="ex. Re-style header", name="title")
+        p Description:
+            input#inputDescription(type="text", placeholder="ex. Change the colour scheme.", name="description")
+        p Start Date:
+            input#inputStartDate(type="date", name="startdate")
+        p End Date:
+            input#inputEndDate(type="date", name="enddate")
+        p
+            input(type="hidden",value=project.id, name="project")
+        p
+            button#btnSubmit(type="submit") Add New Task
+
+    ul
+        each task, i in tasks
+            li(id=task.id)
+                a(href='/tasks/'+task.id)
+                    h2 #{task.title}
+                    p #{task.description}

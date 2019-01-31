@@ -8,8 +8,10 @@ var multer  = require('multer');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 // var blobRouter = require('./routes/blobs');
+var projectRouter = require('./routes/projects');
 var taskRouter = require('./routes/tasks');
 var calendarRouter = require('./routes/calendar');
+var timelineRouter = require('./routes/timeline');
 
 var app = express();
 
@@ -39,8 +41,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 // app.use('/blobs', blobRouter);
+app.use('/projects', projectRouter);
 app.use('/tasks', taskRouter);
 app.use('/calendar', calendarRouter);
+app.use('/timeline', timelineRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -24,30 +24,30 @@ router.use(methodOverride(function(req, res){
     }
 }));
 
-//build the REST operations at the base for tasks
-//this will be accessible from http://127.0.0.1:3000/tasks if the default route for / is left unchanged
+//build the REST operations at the base for projects
+//this will be accessible from http://127.0.0.1:3000/projects if the default route for / is left unchanged
 router.route('/')
     .get(function(req, res, next) {
-        /* GET all tasks */
-        r.table('tasks').run(connection, function(err, cursor) {
+        /* GET all projects */
+        r.table('projects').run(connection, function(err, cursor) {
             if (err) throw err;
             cursor.toArray(function(err, result) {
                 if (err) {
                     throw err;
                 } else {
                     //respond to both HTML and JSON. JSON responses require 'Accept: application/json;' in the Request Header
-                    // console.log(tasks);
+                    // console.log(projects);
                     console.log(JSON.stringify(result, null, 2));
-                    var tasks = result;
+                    var projects = result;
                     res.format({
-                        //HTML response will render the index.pug file in the views/tasks folder. We are also setting "tasks" to be an accessible variable in our pug view
+                        //HTML response will render the index.pug file in the views/projects folder. We are also setting "projects" to be an accessible variable in our pug view
                         html: function(){
-                            res.render('tasks/index', {
-                                title: 'All my Tasks',
-                                "tasks" : tasks
+                            res.render('projects/index', {
+                                title: 'All my projects',
+                                "projects" : projects
                             });
                         },
-                        //JSON response will show all tasks in JSON format
+                        //JSON response will show all projects in JSON format
                         json: function(){
                             res.json(infophotos);
                         }
@@ -57,7 +57,7 @@ router.route('/')
         });
     })
     .post(function(req, res) {
-        /* POST new task */
+        /* POST new project */
         // console.log(req.body); //should be all the text
         // console.log(req.files); //should be all the files
 
@@ -79,23 +79,22 @@ router.route('/')
 
         console.log(changedFields);
 
-        r.table('tasks').insert(changedFields).run(connection, function(err, cursor)
+        r.table('projects').insert(changedFields).run(connection, function(err, cursor)
         {
             if (err) {
                 throw err;
             } else {
                 console.log(cursor);
-                //Task has been created
+                //project has been created
                 res.format({
                     //HTML response will set the location and redirect back to the home page.
                     'text/html': function(){
-                        // If it worked, set the header so the address bar doesn't still say /adduser
-                         res.location("tasks");
+                         // If it worked, set the header so the address bar doesn't still say /adduser
+                         res.location("projects");
                          // And forward to success page
-                         res.redirect("/tasks");
-
+                         res.redirect("/projects");
                     },
-                    //JSON response will show the newly created task
+                    //JSON response will show the newly created project
                     'application/json': function(){
                         res.json(cursor);
                     }
@@ -104,15 +103,15 @@ router.route('/')
         });
     });
 
-/* GET new task form */
+/* GET new project form */
 router.get('/new', function(req, res) {
-    res.render('tasks/new', { title: 'Add New Task' });
+    res.render('projects/new', { title: 'Add New project' });
 });
 
 // route middleware to validate :id
 router.param('id', function(req, res, next, id) {
     // find the ID in the database
-    r.table('tasks').get(req.params.id).run(connection, function(err, task) {
+    r.table('projects').get(req.params.id).run(connection, function(err, project) {
         if (err) {
             console.log(id + ' was not found');
             res.status(404)
@@ -128,7 +127,7 @@ router.param('id', function(req, res, next, id) {
             });
         //if it is found we continue on
         } else {
-            console.log(task);
+            console.log(project);
             // once validation is done save the new item in the req
             req.id = id;
             next();
@@ -136,67 +135,77 @@ router.param('id', function(req, res, next, id) {
     });
 });
 
-/* GET individual task */
+/* GET individual project */
 router.route('/:id')
     .get(function(req, res) {
         console.log(req.params.id);
-        //an individual task will be loaded here
-        r.table('tasks').get(req.params.id).run(connection, function(err, task) {
+        //an individual project will be loaded here
+        r.table('projects').get(req.params.id).run(connection, function(err, project) {
             if (err) {
                 throw err;
             } else {
-                console.log('Validating task: ' + task.id);
-                console.log(task.id);
-                if (!task.created) {
-                    task.created = new Date(); //hacky TODO: find a better solution
+                console.log('Validating project: ' + project.id);
+                console.log(project.id);
+                if (!project.created) {
+                    project.created = new Date(); //hacky TODO: find a better solution
                 }
-                var taskcreated = task.created.toISOString();
-                taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
-                res.format({
-                    html: function(){
-                        res.render('tasks/show', {
-                            "taskcreated" : taskcreated,
-                            "task" : task
-                        });
-                    },
-                    json: function(){
-                        res.json(task);
-                    }
+                var projectcreated = project.created.toISOString();
+                projectcreated = projectcreated.substring(0, projectcreated.indexOf('T'));
+                r.table('tasks').filter(r.row('project').eq(project.id)).run(connection, function(err, cursor) {
+                    if (err) throw err;
+                    cursor.toArray(function(err, tasks) {
+                        if (err) {
+                            throw err;
+                        } else {
+                            res.format({
+                                html: function(){
+                                    res.render('projects/show', {
+                                        "projectcreated" : projectcreated,
+                                        "project" : project,
+                                        "tasks" : tasks
+                                    });
+                                },
+                                json: function(){
+                                    res.json(project);
+                                }
+                            });   
+                        }
+                    });
                 });
             }
         });
     });
 
-/* Edit existing task */
+/* Edit existing project */
 router.route('/:id/edit')
     .get(function(req, res) {
-        //individual task will be loaded here
-        r.table('tasks').get(req.params.id).run(connection, function(err, task) {
+        //individual project will be loaded here
+        r.table('projects').get(req.params.id).run(connection, function(err, project) {
             if (err) {
                 throw err;
             } else {
-                console.log('Editing task: ' + task.id);
-                console.log(task.id);
-                if (!task.created) {
-                    task.created = new Date(); //hacky TODO: find a better solution
+                console.log('Editing project: ' + project.id);
+                console.log(project.id);
+                if (!project.created) {
+                    project.created = new Date(); //hacky TODO: find a better solution
                 }
-                var taskcreated = task.created.toISOString();
-                taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
+                var projectcreated = project.created.toISOString();
+                projectcreated = projectcreated.substring(0, projectcreated.indexOf('T'));
                 res.format({
                     html: function(){
-                        res.render('tasks/edit', {
-                            "task" : task
+                        res.render('projects/edit', {
+                            "project" : project
                         });
                     },
                     json: function(){
-                        res.json(task);
+                        res.json(project);
                     }
                 });
             }
         });
     })
     .put(function(req, res) {
-        //individual task will be updated here
+        //individual project will be updated here
         var changedFields = {};
 
         for (var name in req.body) {
@@ -210,22 +219,22 @@ router.route('/:id/edit')
             }
         }
         // console.log (changedFields);
-        r.table('tasks').get(req.params.id).update(changedFields).run(connection, function(err, callback)
+        r.table('projects').get(req.params.id).update(changedFields).run(connection, function(err, callback)
         {
             if (err) {
                 throw err;
             } else {
-                //Task has been updated
+                //project has been updated
                 res.format({
                     //HTML response will set the location and redirect back to the home page.
                     'text/html': function(){
                         console.log(req.params.id);
                          // If it worked, set the header so the address bar doesn't still say /adduser
-                         res.location("tasks/" + req.params.id);
+                         res.location("projects/" + req.params.id);
                          // And forward to success page
-                         res.redirect("/tasks/" + req.params.id);
+                         res.redirect("/projects/" + req.params.id);
                     },
-                    //JSON response will show the callback report of the updated task
+                    //JSON response will show the callback report of the updated project
                     'application/json': function(){
                         res.json(callback);
                     }
@@ -234,23 +243,23 @@ router.route('/:id/edit')
         });
     })
     .delete(function (req, res){
-        // delete a specific task
-        r.table('tasks').get(req.params.id).delete().run(connection, function(err, callback)
+        // delete a specific project
+        r.table('projects').get(req.params.id).delete().run(connection, function(err, callback)
         {
             if (err) {
                 throw err;
             } else {
-                //Task has been deleted
+                //project has been deleted
                 res.format({
                     //HTML response will set the location and redirect back to the home page.
                     'text/html': function(){
                         console.log(req.params.id);
                          // If it worked, set the header so the address bar doesn't still say /adduser
-                         res.location("tasks");
+                         res.location("projects");
                          // And forward to success page
-                         res.redirect("/tasks/");
+                         res.redirect("/projects/");
                     },
-                    //JSON response will show the callback report of the updated task
+                    //JSON response will show the callback report of the updated project
                     'application/json': function(){
                         res.json(callback);
                     }

@@ -1,6 +1,29 @@
-var express = require('express');
-var moment = require('moment');
-var router = express.Router();
+var express = require('express'),
+    moment = require('moment'),
+    router = express.Router(),
+    r = require('rethinkdb'), //rethinkdb (js driver) connection
+    bodyParser = require('body-parser'), //parses information from POST
+    methodOverride = require('method-override'), //used to manipulate POST
+    multer = require('multer'); // used to upload files
+
+//TODO: See if this connection can be made global
+var connection = null;
+r.connect( {host: 'localhost', port: 28015}, function(err, conn) {
+    if (err) throw err;
+    connection = conn;
+});
+
+//Any requests to this controller must pass through this 'use' function
+//Copy and pasted from method-override
+router.use(bodyParser.urlencoded({ extended: true }))
+router.use(methodOverride(function(req, res){
+    if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+    // look in urlencoded POST bodies and delete it
+    var method = req.body._method
+    delete req.body._method
+    return method
+    }
+}));
 
 /* GET calendar page. */
 
