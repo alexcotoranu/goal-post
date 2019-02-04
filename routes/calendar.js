@@ -1,85 +1,85 @@
-var express = require('express'),
-    moment = require('moment'),
-    router = express.Router(),
-    r = require('rethinkdb'), //rethinkdb (js driver) connection
-    bodyParser = require('body-parser'), //parses information from POST
-    methodOverride = require('method-override'), //used to manipulate POST
-    multer = require('multer'); // used to upload files
-
-//TODO: See if this connection can be made global
-var connection = null;
-r.connect( {host: 'localhost', port: 28015}, function(err, conn) {
-    if (err) throw err;
-    connection = conn;
-});
-
-//Any requests to this controller must pass through this 'use' function
-//Copy and pasted from method-override
-router.use(bodyParser.urlencoded({ extended: true }))
-router.use(methodOverride(function(req, res){
-    if (req.body && typeof req.body === 'object' && '_method' in req.body) {
-    // look in urlencoded POST bodies and delete it
-    var method = req.body._method
-    delete req.body._method
-    return method
-    }
-}));
+const express = require("express"),
+  moment = require("moment"),
+  router = express.Router(),
+  fetch = require("isomorphic-fetch"),
+  request = require("request"),
+  http = require("http");
 
 /* GET calendar page. */
-
-router.route('/:year/:month')
-  .get(function(req, res) {
-
-    function daysInMonth(month,year){
-      return new Date(year, month, 0).getDate();
+router.route("/:year/:month").get((req, res) => {
+  //task API options
+  var url = "http://localhost:5000/tasks/";
+  var options = {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
     }
+  };
 
-    month_labels = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  getTasks = async () => {
+    const response = await fetch(url, options);
+    const tasks = await response.json();
 
-    day_labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
-    // console.log(req.params.year + '-' + req.params.month);
-    
-    // var calDate = req.params.year + '-' + req.params.month;
-    var lastDay = daysInMonth(req.params.month,req.params.year);
-    if (lastDay < 10) {
-        lastDay = '0'+lastDay;
-    }
-
-    var minDate = new Date(req.params.year, req.params.month-1, 1);
-    var maxDate = new Date(req.params.year, req.params.month-1, lastDay);
-
-    // console.log(lastDay);
-    // console.log(minDate);
-    // console.log(maxDate);
-
-    // res.send('Calendar');
-
-    var a = moment(req.params.year + '-' + req.params.month + '-01T00:00:00');
-    var b = moment(req.params.year + '-' + req.params.month + '-' + lastDay + 'T23:59:59');
-
-    var calDays = {};
-
-    // console.log(a);
-    var firstDay = a.format('E');
-
-    for (var m = a; m.isBefore(b); m.add(1,'days')) {
-        var dayInMonth = m.format('DD');
-        var dayInCal = Number(dayInMonth) + Number(firstDay);
-        calDays["day"+dayInCal] = dayInMonth;
-    }
-
-    // console.log(calDays);
-    res.format({
-        html: function(){
-            res.render('calendar', {
-              "cal" : calDays
-            });
-        },
-        json: function(){
-            res.json(calDays);
+    // TODO
+    getDays(req.params.year, req.params.month).map(day => {
+      for (var i = 0; i < tasks.length; i++) {
+        // // console.log(tasks[i].startdate);
+        // if (tasks[i].startdate && tasks[i].startdate == day.date) {
+        //   day.task = tasks[task];
+        //   console.log("Updated Day Object: " + day.date);
+        //   console.log(day);
+        // }
+      }
+      for (task in tasks) {
+        if (tasks[task].startdate && tasks[task].startdate === day.date) {
+          day.task = tasks[task];
+          // console.log(day);
         }
-      });
+      }
+      return days;
     });
+  };
+
+  getDays = (providedYear, providedMonth) => {
+    //calculate the last day in a given month
+    var lastDay = new Date(providedYear, providedMonth, 0).getDate();
+    //provide a second digit for single digit days i.e. 2 -> 02
+    if (lastDay < 10) {
+      lastDay = "0" + lastDay;
+    }
+
+    var firstDate = moment(providedYear + "-" + providedMonth + "-01T00:00:00");
+    var lastDate = moment(
+      providedYear + "-" + providedMonth + "-" + lastDay + "T23:59:59"
+    );
+
+    var calDays = [];
+
+    for (var m = firstDate; m.isBefore(lastDate); m.add(1, "days")) {
+      var firstDay = firstDate.format("E"),
+        date = m.format("YYYY-MM-DD"),
+        year = m.format("YYYY"),
+        month = m.format("MM"),
+        day = m.format("DD"),
+        calPos = Number(day) + Number(firstDay);
+      // calDays["day" + dayInCal] = dayInMonth;
+      calDays[Number(day)] = { calPos, date, day, month, year };
+    }
+    return calDays;
+  };
+
+  // console.log(calDays);
+  res.format({
+    html: () => {
+      res.render("calendar", {
+        cal: getTasks()
+      });
+    },
+    json: () => {
+      res.json(calDays);
+    }
+  });
+});
 
 module.exports = router;
