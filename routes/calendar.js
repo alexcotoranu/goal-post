@@ -5,40 +5,29 @@ const express = require("express"),
   request = require("request"),
   http = require("http");
 
+var arrayToSend = [];
+
 /* GET calendar page. */
 router.route("/:year/:month").get((req, res) => {
-  //task API options
-  var url = "http://localhost:5000/tasks/";
-  var options = {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    }
-  };
-
+  //AJAX call
   getTasks = async () => {
-    const response = await fetch(url, options);
-    const tasks = await response.json();
-
-    // TODO
-    getDays(req.params.year, req.params.month).map(day => {
-      for (var i = 0; i < tasks.length; i++) {
-        // // console.log(tasks[i].startdate);
-        // if (tasks[i].startdate && tasks[i].startdate == day.date) {
-        //   day.task = tasks[task];
-        //   console.log("Updated Day Object: " + day.date);
-        //   console.log(day);
-        // }
-      }
-      for (task in tasks) {
-        if (tasks[task].startdate && tasks[task].startdate === day.date) {
-          day.task = tasks[task];
-          // console.log(day);
+    try {
+      //task API options
+      var url = "http://localhost:5000/tasks/";
+      var options = {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
         }
-      }
-      return days;
-    });
+      };
+      const response = await fetch(url, options);
+      const body = await response.json();
+      return body;
+      // resolve(JSON.parse(body));
+    } catch (err) {
+      throw err; // TypeError: failed to fetch
+    }
   };
 
   getDays = (providedYear, providedMonth) => {
@@ -54,6 +43,16 @@ router.route("/:year/:month").get((req, res) => {
       providedYear + "-" + providedMonth + "-" + lastDay + "T23:59:59"
     );
 
+    var weekDays = [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
+    ];
+
     var calDays = [];
 
     for (var m = firstDate; m.isBefore(lastDate); m.add(1, "days")) {
@@ -62,24 +61,70 @@ router.route("/:year/:month").get((req, res) => {
         year = m.format("YYYY"),
         month = m.format("MM"),
         day = m.format("DD"),
+        weekday = weekDays[m.day()],
         calPos = Number(day) + Number(firstDay);
-      // calDays["day" + dayInCal] = dayInMonth;
-      calDays[Number(day)] = { calPos, date, day, month, year };
+      calDays[Number(day)] = { calPos, weekday, date, day, month, year };
     }
     return calDays;
   };
 
-  // console.log(calDays);
-  res.format({
-    html: () => {
-      res.render("calendar", {
-        cal: getTasks()
-      });
-    },
-    json: () => {
-      res.json(calDays);
-    }
+  // listAllTasks = () => {
+  //   var initializeGetTasks = getTasks();
+  //   var taskList = initializeGetTasks.then(result => {
+  //     return result;
+  //   });
+  //   return taskList;
+  // };
+
+  getTasks().then(tasks => {
+    //map each day for the month being requested for
+    const taskDays = getDays(req.params.year, req.params.month).map(day => {
+      // var tempTaskDays = [];
+      var tempTaskDays = day;
+      // if a task's startdate is defined and it coincides with this day
+      for (task in tasks) {
+        if (tasks[task].startdate && tasks[task].startdate === day.date) {
+          // add the task to this day
+          tempTaskDays.task = tasks[task];
+        }
+      }
+      //TODO: figure out what is causing the first entry to be empty
+    });
+
+    // JSON.stringify(taskDays);
+    console.log(taskDays);
+
+    res.format({
+      html: () => {
+        res.render("calendar", {
+          // cal: getTheseDays()
+          cal: taskDays
+        });
+      },
+      json: () => {
+        // res.json(getTheseDays());
+        // res.json(main());
+      }
+    });
   });
+
+  // getTheseDays = () => {
+  //   var tasks = listAllTasks();
+  //   // console.log(tasks);
+  //   var taskDays = getDays(req.params.year, req.params.month).map(day => {
+  //     // if a task's startdate is defined and it coincides with this day
+  //     for (task in tasks) {
+  //       if (tasks[task].startdate && tasks[task].startdate === day.date) {
+  //         // add the task to this day
+  //         day.task = tasks[task];
+  //       }
+  //     }
+  //   });
+  //   // console.log(taskDays);
+  //   return taskDays;
+  // };
+
+  // console.log(getTheseDays());
 });
 
 module.exports = router;
