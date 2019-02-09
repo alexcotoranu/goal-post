@@ -2,4 +2,5 @@ _test/
 node_modules/
 public/images/
 uploads/
+rethinkdb_data/
 *.zip
