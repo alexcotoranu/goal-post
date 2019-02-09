@@ -2,399 +2,44 @@ extends ../layout
 
 block content
     
-    script
-        | var taskDays = !{JSON.stringify(cal)};
-        | var days = [];
-        | for (var key in taskDays) days.push(taskDays[key])
-        | console.log(days);
+  //- script
+  //-   | var taskDays = !{JSON.stringify(cal)};
+  //-   | var days = [];
+  //-   | for (var key in taskDays) days.push(taskDays[key])
+  //-   | console.log(days);
 
 
-    table#cal_table
-        tr
-            th.monday Monday
-            th.tuesday Tuesday
-            th.wednesday Wednesday
-            th.thursday Thursday
-            th.friday Friday
-            th.saturday Saturday
-            th.sunday Sunday
-        //- do a for loop here
-        
-        //- -var weeks = 0;
-        //- while weeks < 5;
+  table#cal_table
+      tr
+        th.monday Monday
+        th.tuesday Tuesday
+        th.wednesday Wednesday
+        th.thursday Thursday
+        th.friday Friday
+        th.saturday Saturday
+        th.sunday Sunday
 
-        //-     tr#week1
-        //-         td.monday #{cal.day1}
-        //-             -if (cal.day1 !== undefined){
-        //-                 -if (cal.day1.tasks !== undefined){
-        //-                     div
-        //-                         each task, i in cal.day1.tasks
-        //-                             p #{task}
-        //-                 -}
-        //-             -}
+      each w, index in cal
+        -if (w !== undefined){
+          tr(id='week-' + index)
+            each d in w
+              td(class= d.weekday)
+                -if (d.tasks !== undefined){
+                  div
+                    each task in d.tasks
+                      p= task.title
+                      p= task.description
+                -}
+        -}
 
-        //- tr
-        //-     td
-        //-         div
-        //-             each d in cal
-        //-                 -if (d !== undefined){
-        //-                     p= d.weekday
-        //-                     p
-        //-                 -}
-                        //- p.
-                        //-     !{JSON.stringify(val)}
-                    //- div #{days}
-                    //- div     
-                    //- -for (day in days) {
-                    //-     h3 This is a Day:
-                    //-     p #{day.weekday}
-                    //-     -for (task in day) {
-                    //-         h3 This is a Task:
-                    //-         p #{task}
-                    //-     -}
-                    //-     //- p #{day}
-                    //-     //- p #{cal.created}
-                    //- -}
-
-        //- tr#week1
-        //-     td.monday #{cal.day1}
-        //-         -if (cal.day1 !== undefined){
-        //-             -if (cal.day1.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day1.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.tuesday #{cal.day2}
-        //-         -if (cal.day2 !== undefined){
-        //-             -if (cal.day2.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day2.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.wednesday #{cal.day3}
-        //-         -if (cal.day3 !== undefined){
-        //-             -if (cal.day3.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day3.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.thursday #{cal.day4}
-        //-         -if (cal.day4 !== undefined){
-        //-             -if (cal.day4.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day4.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.friday #{cal.day5}
-        //-         -if (cal.day5 !== undefined){
-        //-             -if (cal.day5.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day5.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.saturday #{cal.day6}
-        //-         -if (cal.day6 !== undefined){
-        //-             -if (cal.day6.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day6.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.sunday #{cal.day7}
-        //-         -if (cal.day7 !== undefined){
-        //-             -if (cal.day7.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day7.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //- tr#week2
-        //-     td.monday #{cal.day8}
-        //-         -if (cal.day8 !== undefined){
-        //-             -if (cal.day8.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day8.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.tuesday #{cal.day9}
-        //-         -if (cal.day9 !== undefined){
-        //-             -if (cal.day9.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day9.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.wednesday #{cal.day10}
-        //-         -if (cal.day10 !== undefined){
-        //-             -if (cal.day10.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day10.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.thursday #{cal.day11}
-        //-         -if (cal.day11 !== undefined){
-        //-             -if (cal.day11.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day11.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.friday #{cal.day12}
-        //-         -if (cal.day12 !== undefined){
-        //-             -if (cal.day12.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day12.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.saturday #{cal.day13}
-        //-         -if (cal.day13 !== undefined){
-        //-             -if (cal.day13.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day13.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.sunday #{cal.day14}
-        //-         -if (cal.day14 !== undefined){
-        //-             -if (cal.day14.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day14.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //- tr#week3
-        //-     td.monday #{cal.day15}
-        //-         -if (cal.day15 !== undefined){
-        //-             -if (cal.day15.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day15.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.tuesday #{cal.day16}
-        //-         -if (cal.day16 !== undefined){
-        //-             -if (cal.day16.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day16.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.wednesday #{cal.day17}
-        //-         -if (cal.day17 !== undefined){
-        //-             -if (cal.day17.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day17.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.thursday #{cal.day18}
-        //-         -if (cal.day18 !== undefined){
-        //-             -if (cal.day18.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day18.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.friday #{cal.day19}
-        //-         -if (cal.day19 !== undefined){
-        //-             -if (cal.day19.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day19.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.saturday #{cal.day20}
-        //-         -if (cal.day20 !== undefined){
-        //-             -if (cal.day20.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day20.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.sunday #{cal.day21}
-        //-         -if (cal.day21 !== undefined){
-        //-             -if (cal.day21.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day21.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //- tr#week4
-        //-     td.monday #{cal.day22}
-        //-         -if (cal.day22 !== undefined){
-        //-             -if (cal.day22.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day22.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.tuesday #{cal.day23}
-        //-         -if (cal.day23 !== undefined){
-        //-             -if (cal.day23.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day23.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.wednesday #{cal.day24}
-        //-         -if (cal.day24 !== undefined){
-        //-             -if (cal.day24.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day24.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.thursday #{cal.day25}
-        //-         -if (cal.day25 !== undefined){
-        //-             -if (cal.day25.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day25.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.friday #{cal.day26}
-        //-         -if (cal.day26 !== undefined){
-        //-             -if (cal.day26.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day26.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.saturday #{cal.day27}
-        //-         -if (cal.day27 !== undefined){
-        //-             -if (cal.day27.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day27.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.sunday #{cal.day28}
-        //-         -if (cal.day28 !== undefined){
-        //-             -if (cal.day28.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day28.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //- tr#week5
-        //-     td.monday #{cal.day29}
-        //-         -if (cal.day29 !== undefined){
-        //-             -if (cal.day29.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day29.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.tuesday #{cal.day30}
-        //-         -if (cal.day30 !== undefined){
-        //-             -if (cal.day30.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day30.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.wednesday #{cal.day31}
-        //-         -if (cal.day31 !== undefined){
-        //-             -if (cal.day31.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day31.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.thursday #{cal.day32}
-        //-         -if (cal.day32 !== undefined){
-        //-             -if (cal.day32.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day32.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.friday #{cal.day33}
-        //-         -if (cal.day33 !== undefined){
-        //-             -if (cal.day33.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day33.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.saturday #{cal.day34}
-        //-         -if (cal.day34 !== undefined){
-        //-             -if (cal.day34.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day34.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.sunday #{cal.day35}
-        //-         -if (cal.day35 !== undefined){
-        //-             -if (cal.day35.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day35.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //- tr#week6
-        //-     td.monday #{cal.day36}
-        //-         -if (cal.day36 !== undefined){
-        //-             -if (cal.day36.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day36.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.tuesday #{cal.day37}
-        //-         -if (cal.day37 !== undefined){
-        //-             -if (cal.day37.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day37.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.wednesday #{cal.day38}
-        //-         -if (cal.day38 !== undefined){
-        //-             -if (cal.day38.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day38.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.thursday #{cal.day39}
-        //-         -if (cal.day39 !== undefined){
-        //-             -if (cal.day39.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day39.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.friday #{cal.day40}
-        //-         -if (cal.day40 !== undefined){
-        //-             -if (cal.day40.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day40.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.saturday #{cal.day41}
-        //-         -if (cal.day41 !== undefined){
-        //-             -if (cal.day41.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day41.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
-        //-     td.sunday #{cal.day42}
-        //-         -if (cal.day42 !== undefined){
-        //-             -if (cal.day42.tasks !== undefined){
-        //-                 div
-        //-                     each task, i in cal.day42.tasks
-        //-                         p #{task}
-        //-             -}
-        //-         -}
+      //- tr
+      //-   td
+      //-     div
+      //-       each d in cal
+      //-         -if (d !== undefined){
+      //-           p= d.weekday
+      //-           -if (d.task !== undefined){
+      //-             p= d.task.title
+      //-             p= d.task.description
+      //-           -}
+      //-         -}

@@ -44,14 +44,16 @@ router.route("/:year/:month").get((req, res) => {
     );
 
     var weekDays = [
+      "sunday",
       "monday",
       "tuesday",
       "wednesday",
       "thursday",
       "friday",
-      "saturday",
-      "sunday"
+      "saturday"
     ];
+
+    // var weekDays = moment.weekdays();
 
     var calDays = [];
 
@@ -62,43 +64,54 @@ router.route("/:year/:month").get((req, res) => {
         month = m.format("MM"),
         day = m.format("DD"),
         weekday = weekDays[m.day()],
-        calPos = Number(day) + Number(firstDay);
-      calDays[Number(day)] = { calPos, weekday, date, day, month, year };
+        week = m.isoWeek();
+      calDays[Number(day)] = {week, weekday, date, day, month, year};
     }
+
     return calDays;
   };
-
-  // listAllTasks = () => {
-  //   var initializeGetTasks = getTasks();
-  //   var taskList = initializeGetTasks.then(result => {
-  //     return result;
-  //   });
-  //   return taskList;
-  // };
-
+  
   getTasks().then(tasks => {
     //map each day for the month being requested for
     const taskDays = getDays(req.params.year, req.params.month).map(day => {
       // var tempTaskDays = [];
-      var tempTaskDays = day;
+      var tempTaskDay = day;
+      tempTaskDay.tasks = {};
       // if a task's startdate is defined and it coincides with this day
-      for (task in tasks) {
-        if (tasks[task].startdate && tasks[task].startdate === day.date) {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].startdate && tasks[i].startdate === day.date) {
           // add the task to this day
-          tempTaskDays.task = tasks[task];
+          tempTaskDay.tasks[i] = tasks[i];
+          // console.log(tempTaskDays);
         }
       }
+      return tempTaskDay;
       //TODO: figure out what is causing the first entry to be empty
     });
 
-    // JSON.stringify(taskDays);
-    console.log(taskDays);
+    var taskWeeks = taskDays.reduce( (acc, taskDay)=> {
+      
+      // check if the week number exists
+      if (typeof acc[taskDay.week] === 'undefined') {
+        acc[taskDay.week] = [];
+      }
+      
+      acc[taskDay.week].push(taskDay);
+      
+      return acc;
+    
+    }, {});
+
+    console.log(taskWeeks);
+
+    JSON.stringify(taskWeeks);
+    // console.log(taskDays);
 
     res.format({
       html: () => {
         res.render("calendar", {
           // cal: getTheseDays()
-          cal: taskDays
+          cal: taskWeeks
         });
       },
       json: () => {
@@ -108,23 +121,6 @@ router.route("/:year/:month").get((req, res) => {
     });
   });
 
-  // getTheseDays = () => {
-  //   var tasks = listAllTasks();
-  //   // console.log(tasks);
-  //   var taskDays = getDays(req.params.year, req.params.month).map(day => {
-  //     // if a task's startdate is defined and it coincides with this day
-  //     for (task in tasks) {
-  //       if (tasks[task].startdate && tasks[task].startdate === day.date) {
-  //         // add the task to this day
-  //         day.task = tasks[task];
-  //       }
-  //     }
-  //   });
-  //   // console.log(taskDays);
-  //   return taskDays;
-  // };
-
-  // console.log(getTheseDays());
 });
 
 module.exports = router;

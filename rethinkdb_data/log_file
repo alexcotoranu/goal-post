@@ -1,0 +1,39 @@
+2019-02-08T10:58:34.897837000 0.227043s notice: Recursively removing directory /Users/avissabigdelli/Documents/Projects/goal-post/rethinkdb_data/tmp
+2019-02-08T10:58:34.902825000 0.232036s notice: Initializing directory /Users/avissabigdelli/Documents/Projects/goal-post/rethinkdb_data
+2019-02-08T10:58:34.903061000 0.232267s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/Users/avissabigdelli/Documents/Projects/goal-post/rethinkdb_data' did not already exist or is empty.)
+2019-02-08T10:58:34.903190000 0.232396s notice: Running rethinkdb 2.3.6 (CLANG 8.1.0 (clang-802.0.42))...
+2019-02-08T10:58:34.912474000 0.241681s notice: Running on Darwin 18.2.0 x86_64
+2019-02-08T10:58:34.912552000 0.241757s notice: Loading data from directory /Users/avissabigdelli/Documents/Projects/goal-post/rethinkdb_data
+2019-02-08T10:58:35.099469000 0.428686s info: Automatically using cache size of 199 MB
+2019-02-08T10:58:35.100433000 0.429650s notice: Listening for intracluster connections on port 29015
+2019-02-08T10:58:35.102956000 0.432173s notice: Listening for client driver connections on port 28015
+2019-02-08T10:58:35.103143000 0.432361s notice: Listening for administrative HTTP connections on port 8080
+2019-02-08T10:58:35.103150000 0.432367s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2019-02-08T10:58:35.103158000 0.432375s notice: Listening on driver addresses: 127.0.0.1, ::1
+2019-02-08T10:58:35.103161000 0.432378s notice: Listening on http addresses: 127.0.0.1, ::1
+2019-02-08T10:58:35.103168000 0.432385s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2019-02-08T10:58:35.103176000 0.432392s notice: Server ready, "Avissas_MacBook_Pro_2_local_dl4" 040ce1a6-c393-4f78-878e-56389b93275d
+2019-02-08T11:00:50.024948000 135.362260s info: Table a5ba1b6c-b89f-4050-9ffa-a89999abd86c: Starting a new Raft election for term 1.
+2019-02-08T11:00:50.025361000 135.362674s info: Table a5ba1b6c-b89f-4050-9ffa-a89999abd86c: Added replica on this server.
+2019-02-08T11:00:50.044014000 135.381328s info: Table a5ba1b6c-b89f-4050-9ffa-a89999abd86c: This server is Raft leader for term 1. Latest log index is 0.
+2019-02-08T11:00:55.617928000 140.955577s info: Table f70cca27-1cff-4176-b98f-4291d4a27077: Starting a new Raft election for term 1.
+2019-02-08T11:00:55.618334000 140.955982s info: Table f70cca27-1cff-4176-b98f-4291d4a27077: Added replica on this server.
+2019-02-08T11:00:55.638734000 140.976383s info: Table f70cca27-1cff-4176-b98f-4291d4a27077: This server is Raft leader for term 1. Latest log index is 0.
+2019-02-08T11:03:06.566648000 271.912153s info: Table a5ba1b6c-b89f-4050-9ffa-a89999abd86c: Configuration is changing.
+2019-02-08T11:03:19.695327000 285.041621s info: Table f70cca27-1cff-4176-b98f-4291d4a27077: Configuration is changing.
+2019-02-09T06:28:43.037657000 0.015787s notice: Running rethinkdb 2.3.6 (CLANG 8.1.0 (clang-802.0.42))...
+2019-02-09T06:28:43.045381000 0.023514s notice: Running on Darwin 18.2.0 x86_64
+2019-02-09T06:28:43.045652000 0.023776s notice: Loading data from directory /Users/avissabigdelli/Documents/Projects/goal-post/rethinkdb_data
+2019-02-09T06:28:43.080679000 0.058803s info: Automatically using cache size of 606 MB
+2019-02-09T06:28:43.081706000 0.059830s notice: Listening for intracluster connections on port 29015
+2019-02-09T06:28:43.106821000 0.084943s notice: Listening for client driver connections on port 28015
+2019-02-09T06:28:43.106999000 0.085122s notice: Listening for administrative HTTP connections on port 8080
+2019-02-09T06:28:43.107003000 0.085125s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2019-02-09T06:28:43.107017000 0.085140s notice: Listening on driver addresses: 127.0.0.1, ::1
+2019-02-09T06:28:43.107020000 0.085143s notice: Listening on http addresses: 127.0.0.1, ::1
+2019-02-09T06:28:43.107023000 0.085145s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2019-02-09T06:28:43.107026000 0.085148s notice: Server ready, "Avissas_MacBook_Pro_2_local_dl4" 040ce1a6-c393-4f78-878e-56389b93275d
+2019-02-09T06:28:44.306158000 1.284247s info: Table f70cca27-1cff-4176-b98f-4291d4a27077: Starting a new Raft election for term 2.
+2019-02-09T06:28:44.328773000 1.306862s info: Table f70cca27-1cff-4176-b98f-4291d4a27077: This server is Raft leader for term 2. Latest log index is 3.
+2019-02-09T06:28:44.377694000 1.355782s info: Table a5ba1b6c-b89f-4050-9ffa-a89999abd86c: Starting a new Raft election for term 2.
+2019-02-09T06:28:44.398282000 1.376369s info: Table a5ba1b6c-b89f-4050-9ffa-a89999abd86c: This server is Raft leader for term 2. Latest log index is 3.
