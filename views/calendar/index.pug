@@ -25,10 +25,9 @@ block content
             each d in w
               td(class= d.weekday)
                 -if (d.tasks !== undefined){
-                  div
                     each task in d.tasks
-                      p= task.title
-                      p= task.description
+                      a(class='task', href='http://localhost:5000/tasks/'+task.id)
+                        span(title=task.description)= task.title
                 -}
         -}
 

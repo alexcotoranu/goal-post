@@ -26,3 +26,25 @@ a {
 #cal_table th {
 	background-color:#e0e3e6;
 }
+
+#cal_table td {
+	border: 1px solid #CECECE;
+	vertical-align: top;
+}
+
+#cal_table td a.task {
+	border-radius:2px;
+	height: 1rem;
+	padding:0.5rem;
+	width: 100px;
+	background: #00B7FF;
+	line-height: 1rem;
+	color: white;
+	margin: 0.5rem;
+	display: block;
+	text-decoration: none;
+}
+
+#cal_table td a.task:hover {
+	background: black;
+}
