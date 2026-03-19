@@ -121,6 +121,68 @@ router.get('/new', function(req, res) {
     res.render('tasks/new', { title: 'Add New Task' });
 });
 
+/* GET Group view - all tasks for a category prefix */
+router.get('/group/:prefix', function(req, res, next) {
+    var prefix = req.params.prefix;
+    var query = prefix === 'Uncategorized'
+        ? { $or: [{ catprefix: null }, { catprefix: '' }, { catprefix: { $exists: false } }] }
+        : { catprefix: prefix };
+
+    mongoose.model('Task').find(query, function(err, tasks) {
+        if (err) return next(err);
+
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var in3days = new Date(today);
+        in3days.setDate(in3days.getDate() + 3);
+
+        var annotated = tasks.map(function(task) {
+            var target = task.target ? new Date(task.target) : null;
+            if (target) target.setHours(0, 0, 0, 0);
+            var isDone = !!task.completed;
+            var urgency = null;
+            if (!isDone && target) {
+                if (target < today) urgency = 'overdue';
+                else if (target.getTime() === today.getTime()) urgency = 'today';
+                else if (target <= in3days && task.priority >= 3) urgency = 'soon';
+            }
+            if (!isDone && !urgency && task.priority >= 4) urgency = 'high';
+
+            var daysUntil = null;
+            if (target && !isDone) {
+                daysUntil = Math.round((target - today) / (1000 * 60 * 60 * 24));
+            }
+
+            return {
+                task: task,
+                urgency: urgency,
+                daysUntil: daysUntil,
+                targetStr: target ? target.toISOString().substring(0, 10) : null
+            };
+        });
+
+        // Sort: overdue first, then by target date, then undated by priority
+        var urgencyOrder = { overdue: 0, today: 1, soon: 2, high: 3 };
+        annotated.sort(function(a, b) {
+            if (a.task.completed && !b.task.completed) return 1;
+            if (!a.task.completed && b.task.completed) return -1;
+            if (a.urgency && !b.urgency) return -1;
+            if (!a.urgency && b.urgency) return 1;
+            if (a.urgency && b.urgency && a.urgency !== b.urgency) {
+                return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
+            }
+            if (a.daysUntil !== null && b.daysUntil !== null) return a.daysUntil - b.daysUntil;
+            return (b.task.priority || 0) - (a.task.priority || 0);
+        });
+
+        res.render('tasks/group', {
+            title: prefix + ' Tasks',
+            prefix: prefix,
+            tasks: annotated
+        });
+    });
+});
+
 // route middleware to validate :id
 router.param('id', function(req, res, next, id) {
     //console.log('validating ' + id + ' exists');

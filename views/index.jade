@@ -1,5 +1,62 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  .dashboard
+
+    //- TODAY'S FOCUS
+    section.focus-section
+      h2.section-title
+        span.section-icon ◎
+        | Today's Focus
+      if focusTasks.length === 0
+        p.empty-state No urgent tasks — you're on track.
+      else
+        ul.focus-list
+          each item in focusTasks
+            li.focus-item(class='urgency-' + item.urgency)
+              .focus-left
+                span.urgency-badge(class='badge-' + item.urgency)
+                  if item.urgency === 'overdue'
+                    | OVERDUE
+                  else if item.urgency === 'today'
+                    | TODAY
+                  else if item.urgency === 'soon'
+                    | SOON
+                  else
+                    | HIGH PRI
+                a.focus-title(href='/tasks/' + item.task._id)= (item.task.catprefix ? item.task.catprefix + '-' + item.task.idincat + ': ' : '') + item.task.title
+              .focus-right
+                if item.task.target
+                  span.focus-date= item.task.target.toISOString().substring(0, 10)
+                if item.task.progress
+                  span.focus-progress
+                    span.progress-bar
+                      span.progress-fill(style='width:' + item.task.progress + '%')
+                    span.progress-pct= item.task.progress + '%'
+
+    //- GROUP CARDS
+    section.groups-section
+      h2.section-title
+        span.section-icon ▦
+        | Task Groups
+      if groups.length === 0
+        p.empty-state No tasks yet. #[a(href='/tasks/new') Add your first task.]
+      else
+        .group-grid
+          each group in groups
+            a.group-card(href='/tasks/group/' + group.prefix, class=group.overdue > 0 ? 'has-overdue' : group.focus > 0 ? 'has-focus' : '')
+              .group-prefix= group.prefix
+              .group-stats
+                span.stat
+                  span.stat-num= group.total - group.done
+                  span.stat-label  open
+                span.stat
+                  span.stat-num= group.done
+                  span.stat-label  done
+                if group.overdue > 0
+                  span.stat.stat-overdue
+                    span.stat-num= group.overdue
+                    span.stat-label  overdue
+              .group-bar
+                span.group-bar-fill(style='width:' + (group.total > 0 ? Math.round(group.done / group.total * 100) : 0) + '%')
+              .group-pct= group.total > 0 ? Math.round(group.done / group.total * 100) + '% done' : 'no tasks'

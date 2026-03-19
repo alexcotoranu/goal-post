@@ -1,0 +1,66 @@
+extends ../layout
+
+block content
+  .group-page
+
+    .group-header
+      a.back-link(href='/') ← Dashboard
+      h1.group-title= prefix
+      a.btn-new(href='/tasks/new') + New Task
+
+    if tasks.length === 0
+      p.empty-state No tasks in this group yet. #[a(href='/tasks/new') Add one.]
+    else
+      ul.task-list
+        each item in tasks
+          li.task-row(class=(item.task.completed ? 'task-done' : '') + (item.urgency ? ' urgency-' + item.urgency : ''))
+            .task-summary(onclick='this.parentElement.classList.toggle("expanded")')
+              .task-summary-left
+                span.expand-icon ›
+                if item.urgency && !item.task.completed
+                  span.urgency-dot(class='dot-' + item.urgency, title=item.urgency)
+                span.task-id= (item.task.catprefix || '') + (item.task.idincat ? '-' + item.task.idincat : '')
+                span.task-title= item.task.title
+              .task-summary-right
+                if item.task.completed
+                  span.badge-done ✓ done
+                else
+                  if item.daysUntil !== null
+                    span.due-label(class=item.urgency ? 'due-' + item.urgency : '')
+                      if item.daysUntil < 0
+                        | #{Math.abs(item.daysUntil)}d overdue
+                      else if item.daysUntil === 0
+                        | due today
+                      else
+                        | #{item.daysUntil}d left
+                  if item.task.priority
+                    span.priority-pip(class='pri-' + item.task.priority, title='Priority ' + item.task.priority) P#{item.task.priority}
+
+            .task-detail
+              if item.task.description
+                p.task-desc= item.task.description
+              .task-meta
+                if item.targetStr
+                  span.meta-item
+                    span.meta-label Target:
+                    |  #{item.targetStr}
+                if item.task.status
+                  span.meta-item
+                    span.meta-label Status:
+                    |  #{item.task.status}
+                if item.task.difficulty
+                  span.meta-item
+                    span.meta-label Difficulty:
+                    |  #{item.task.difficulty}
+              if item.task.progress !== undefined && item.task.progress !== null
+                .progress-row
+                  span.meta-label Progress:
+                  .progress-bar
+                    .progress-fill(style='width:' + item.task.progress + '%')
+                  span.progress-pct= item.task.progress + '%'
+              .task-actions
+                a.action-link(href='/tasks/' + item.task._id) View
+                a.action-link(href='/tasks/' + item.task._id + '/edit') Edit
+                form(action='/tasks/' + item.task._id, method='post', style='display:inline')
+                  input(type='hidden', name='_method', value='DELETE')
+                  button.action-delete(type='submit', onclick='return confirm("Delete this task?")') Delete
