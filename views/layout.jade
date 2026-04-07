@@ -1,7 +1,16 @@
 doctype html
 html
   head
-    title= title
+    title= title + ' | Goal Post'
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
-    block content
+    nav.topnav
+      a.brand(href='/') Goal Post
+      span.nav-links
+        a(href='/') Dashboard
+        a(href='/tasks') All Tasks
+        a(href='/tasks/new') + New Task
+    main.content
+      block content
