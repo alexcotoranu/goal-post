@@ -1,26 +1,66 @@
 extends ../layout
 
 block content
-    //- p #{task._id}
-    -if (task.completed !== null && typeof(task.completed) !== 'undefined'){
-        p(class='task-complete') Completed
-    -}
-    h1 #{task.catprefix}-#{task.idincat}
-    p #{task.title}
-    p #{task.description}
-    p created: #{taskcreated}
-    p target date: #{tasktarget}
-    -if (typeof(task.updated) !== 'undefined'){
-        p updated: #{task.updated}
-    -}
-    -if (typeof(task.completed) !== 'undefined'){
-        p completed: #{task.completed}
-    -}
-    p status: #{task.status}
-    p progress: #{task.progress}
-    p priority: #{task.priority}
-    p difficulty: #{task.difficulty}
-    -if (typeof(task.img) !== 'undefined'){
-        img(src="../images/" + task.img)
-    -}
-    //- TODO: make a loop for multiple images to be loaded here
+  .task-show
+
+    .task-show-header
+      a.back-link(href='javascript:history.back()') ← Back
+      .task-show-actions
+        a.btn-secondary(href='/tasks/' + task._id + '/edit') Edit
+        form(action='/tasks/' + task._id, method='post', style='display:inline')
+          input(type='hidden', name='_method', value='DELETE')
+          button.btn-danger(type='submit', onclick='return confirm("Delete this task?")') Delete
+
+    .task-show-id
+      if task.completed
+        span.badge-done ✓ Done
+      = (task.catprefix || '?') + '-' + (task.idincat ? padId(task.idincat) : '???')
+
+    h1.task-show-title= task.title
+
+    if task.progress !== undefined && task.progress !== null
+      .show-progress
+        .show-progress-bar
+          .show-progress-fill(style='width:' + task.progress + '%')
+        span.show-progress-pct= task.progress + '%'
+
+    if task.description
+      p.task-show-desc= task.description
+
+    .task-show-meta
+      if createdStr
+        .meta-card
+          .meta-card-label Created
+          .meta-card-val= createdStr
+      if targetStr
+        .meta-card(class=daysUntil !== null && daysUntil < 0 && !task.completed ? 'meta-overdue' : daysUntil === 0 && !task.completed ? 'meta-today' : '')
+          .meta-card-label Target
+          .meta-card-val= targetStr
+          if daysUntil !== null && !task.completed
+            .meta-card-sub
+              if daysUntil < 0
+                | #{Math.abs(daysUntil)}d overdue
+              else if daysUntil === 0
+                | due today
+              else
+                | #{daysUntil}d left
+      if completedStr
+        .meta-card
+          .meta-card-label Completed
+          .meta-card-val= completedStr
+      if task.status
+        .meta-card
+          .meta-card-label Status
+          .meta-card-val= task.status
+      if task.priority
+        .meta-card
+          .meta-card-label Priority
+          .meta-card-val P#{task.priority} · #{['','Low','Medium','High','Critical','Blocker'][task.priority]}
+      if task.difficulty
+        .meta-card
+          .meta-card-label Difficulty
+          .meta-card-val= task.difficulty
+
+    if task.img
+      .task-show-img
+        img(src='/images/' + task.img, alt='attachment')

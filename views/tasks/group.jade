@@ -6,10 +6,17 @@ block content
     .group-header
       a.back-link(href='/') ← Dashboard
       h1.group-title= prefix
-      a.btn-new(href='/tasks/new') + New Task
+      a.btn-primary(href='/tasks/new') + New Task
+
+    //- Quick add within group
+    form.quick-add(action='/tasks/quick', method='post')
+      input(type='hidden', name='redirectTo', value='/tasks/group/' + prefix)
+      input(type='hidden', name='catprefix', value=prefix)
+      input.quick-add-input(type='text', name='title', placeholder='Quick add to ' + prefix + '...', autocomplete='off')
+      button.quick-add-btn(type='submit') Add
 
     if tasks.length === 0
-      p.empty-state No tasks in this group yet. #[a(href='/tasks/new') Add one.]
+      p.empty-state No tasks in this group yet.
     else
       ul.task-list
         each item in tasks
@@ -19,7 +26,7 @@ block content
                 span.expand-icon ›
                 if item.urgency && !item.task.completed
                   span.urgency-dot(class='dot-' + item.urgency, title=item.urgency)
-                span.task-id= (item.task.catprefix || '') + (item.task.idincat ? '-' + item.task.idincat : '')
+                span.task-id= (item.task.catprefix || '') + (item.task.idincat ? '-' + String(item.task.idincat).padStart(3,'0') : '')
                 span.task-title= item.task.title
               .task-summary-right
                 if item.task.completed
@@ -34,7 +41,7 @@ block content
                       else
                         | #{item.daysUntil}d left
                   if item.task.priority
-                    span.priority-pip(class='pri-' + item.task.priority, title='Priority ' + item.task.priority) P#{item.task.priority}
+                    span.priority-pip(class='pri-' + item.task.priority) P#{item.task.priority}
 
             .task-detail
               if item.task.description
@@ -54,7 +61,7 @@ block content
                     |  #{item.task.difficulty}
               if item.task.progress !== undefined && item.task.progress !== null
                 .progress-row
-                  span.meta-label Progress:
+                  span.meta-label Progress
                   .progress-bar
                     .progress-fill(style='width:' + item.task.progress + '%')
                   span.progress-pct= item.task.progress + '%'
@@ -63,4 +70,4 @@ block content
                 a.action-link(href='/tasks/' + item.task._id + '/edit') Edit
                 form(action='/tasks/' + item.task._id, method='post', style='display:inline')
                   input(type='hidden', name='_method', value='DELETE')
-                  button.action-delete(type='submit', onclick='return confirm("Delete this task?")') Delete
+                  button.action-delete(type='submit', onclick='return confirm("Delete?")') Delete

@@ -7,10 +7,14 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     nav.topnav
-      a.brand(href='/') Goal Post
+      a.brand(href='/') ⬡ Goal Post
       span.nav-links
         a(href='/') Dashboard
+        a(href='/board') Board
+        a(href='/roadmap') Roadmap
+        a(href='/calendar') Calendar
         a(href='/tasks') All Tasks
-        a(href='/tasks/new') + New Task
+      a.nav-new(href='/tasks/new') + New Task
     main.content
       block content
+    script(src='/javascripts/app.js')

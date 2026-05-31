@@ -1,28 +1,70 @@
 extends ../layout
 
 block content
-	p #{title}
-	form#formAddTask(name="addtask",method="post",action="/tasks", enctype='multipart/form-data')
-		p Category Prefix:
-			input#inputCatprefix(type="text", placeholder="eg. PRJ", name="catprefix")
-		p Id In Category:
-			input#inputIdincat(type="text", placeholder="ex. 1" name="idincat")
-		p Title: 
-			input#inputTitle(type="text", placeholder="ex. Re-style header", name="title")
-		p Description:
-			input#inputDescription(type="text", placeholder="ex. Change the colour scheme.", name="description")
-		P Target Date:
-			input#inputTarget(type="date", name="target")
-		p Status:
-			input#inputStatus(type="text", placeholder="ex. in-progress" name="status")
-		p Progress:
-			input#inputProgress(type="text", placeholder="ex. 50", name="progress")
-		p Priority:
-			input#inputPriority(type="text", placeholder="ex. 1", name="priority")
-		p Difficulty:
-			input#inputDifficulty(type="text", placeholder="ex. easy", name="difficulty")
-		p Image:
-			input#inputImg(type="file", name="img")
-		//- TODO: this needs to be changed to display thumbnails for all attachments and allow them to be selected and edited/inserted
-		p
-			button#btnSubmit(type="submit") submit
+  .form-page
+    .form-header
+      a.back-link(href='/') ← Dashboard
+      h1 New Task
+
+    form.task-form(action='/tasks', method='post', enctype='multipart/form-data')
+
+      .form-row
+        .form-field.field-grow
+          label Title
+          input(type='text', name='title', placeholder='What needs to be done?', required, autofocus)
+        .form-field.field-narrow
+          label Group
+          input(type='text', name='catprefix', placeholder='e.g. PRJ', list='prefix-list', autocomplete='off')
+          datalist#prefix-list
+            each p in prefixes
+              option(value=p)
+          p.field-hint ID auto-generated
+
+      .form-field
+        label Description
+        textarea(name='description', rows='3', placeholder='More detail, context, links...')
+
+      .form-row
+        .form-field
+          label Status
+          select(name='status')
+            option(value='backlog') Backlog
+            option(value='todo') To Do
+            option(value='in-progress') In Progress
+            option(value='review') Review
+            option(value='done') Done
+
+        .form-field
+          label Priority
+          select(name='priority')
+            option(value='') — None
+            option(value='1') 1 · Low
+            option(value='2') 2 · Medium
+            option(value='3') 3 · High
+            option(value='4') 4 · Critical
+            option(value='5') 5 · Blocker
+
+        .form-field
+          label Difficulty
+          select(name='difficulty')
+            option(value='') — None
+            option(value='easy') Easy
+            option(value='medium') Medium
+            option(value='hard') Hard
+
+      .form-row
+        .form-field
+          label Target Date
+          input(type='date', name='target')
+
+        .form-field
+          label Progress (%)
+          input(type='number', name='progress', min='0', max='100', placeholder='0')
+
+      .form-field
+        label Attachment
+        input(type='file', name='img')
+
+      .form-actions
+        button(type='submit') Create Task
+        a.btn-cancel(href='/') Cancel

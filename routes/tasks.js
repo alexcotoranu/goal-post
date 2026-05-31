@@ -1,397 +1,271 @@
 var express = require('express'),
     router = express.Router(),
-    mongoose = require('mongoose'), //mongo connection
-    bodyParser = require('body-parser'), //parses information from POST
-    methodOverride = require('method-override'); //used to manipulate POST
-    multer = require('multer');
+    mongoose = require('mongoose'),
+    bodyParser = require('body-parser'),
+    methodOverride = require('method-override');
     fs = require('fs');
 
-//Any requests to this controller must pass through this 'use' function
-//Copy and pasted from method-override
-router.use(bodyParser.urlencoded({ extended: true }))
-router.use(methodOverride(function(req, res){
-      if (req.body && typeof req.body === 'object' && '_method' in req.body) {
-        // look in urlencoded POST bodies and delete it
-        var method = req.body._method
-        delete req.body._method
-        return method
-      }
-}))
+router.use(bodyParser.urlencoded({ extended: true }));
+router.use(methodOverride(function(req, res) {
+  if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+    var method = req.body._method;
+    delete req.body._method;
+    return method;
+  }
+}));
 
-//build the REST operations at the base for tasks
-//this will be accessible from http://127.0.0.1:3000/tasks if the default route for / is left unchanged
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function padId(n) {
+  return String(n).padStart(3, '0');
+}
+
+function nextSeq(prefix, cb) {
+  mongoose.model('Counter').findByIdAndUpdate(
+    prefix,
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true },
+    cb
+  );
+}
+
+function applyProgressDates(fields) {
+  if (fields.progress == 100) {
+    fields.completed = new Date();
+  } else if ('progress' in fields) {
+    fields.completed = null;
+  }
+}
+
+function saveUpload(req) {
+  if (req.files && req.files.img) {
+    var tmp = req.files.img.path;
+    var target = './public/images/' + req.files.img.name;
+    fs.rename(tmp, target, function(err) { if (err) console.error(err); });
+    return req.files.img.name;
+  }
+  return null;
+}
+
+function annotateUrgency(task) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var in3 = new Date(today); in3.setDate(in3.getDate() + 3);
+  var target = task.target ? new Date(task.target) : null;
+  if (target) target.setHours(0,0,0,0);
+  var isDone = !!task.completed;
+  var urgency = null;
+  if (!isDone && target) {
+    if (target < today) urgency = 'overdue';
+    else if (target.getTime() === today.getTime()) urgency = 'today';
+    else if (target <= in3 && task.priority >= 3) urgency = 'soon';
+  }
+  if (!isDone && !urgency && task.priority >= 4) urgency = 'high';
+  var daysUntil = (target && !isDone) ? Math.round((target - today) / 86400000) : null;
+  return {
+    task: task,
+    urgency: urgency,
+    daysUntil: daysUntil,
+    targetStr: target ? target.toISOString().substring(0, 10) : null
+  };
+}
+
+// ── POST / (create) ──────────────────────────────────────────────────────────
+
 router.route('/')
-    //GET all tasks
-    .get(function(req, res, next) {
-        //retrieve all tasks from Monogo
-        mongoose.model('Task').find({}, function (err, tasks) {
-              if (err) {
-                  return console.error(err);
-              } else {
-                  //respond to both HTML and JSON. JSON responses require 'Accept: application/json;' in the Request Header
-                  console.log(tasks);
-                  res.format({
-                      //HTML response will render the index.jade file in the views/tasks folder. We are also setting "tasks" to be an accessible variable in our jade view
-                    html: function(){
-                        res.render('tasks/index', {
-                              title: 'All my Tasks',
-                              "tasks" : tasks
-                          });
-                    },
-                    //JSON response will show all tasks in JSON format
-                    json: function(){
-                        res.json(infophotos);
-                    }
-                });
-              }     
-        });
-    })
-    //POST a new task
-    .post(function(req, res) {
-        // Get values from POST request. These can be done through forms or REST calls. These rely on the "name" attributes for forms
-        console.log(req.body); //should be all the text
-        console.log(req.files); //should be all the files
-
-        //if image is uploaded
-        if (req.files.img != undefined) { 
-          var img = req.files.img.name;
-          // TODO: loop through all images
-          //save the image
-          var tmp_path = req.files.img.path;
-          var target_path = './public/images/' + req.files.img.name;
-
-          fs.rename(tmp_path, target_path, function(err) {
-            if (err) throw err;
-            // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
-          });
-        } else { 
-          var img = null;
-        };
-
-
-        var changedFields = {};
-
-        for (var name in req.body) {
-        console.log("-------------");
-        console.log(name + ": " + req.body[name]);
-        changedFields[name] = req.body[name];
-        if (name == 'progress' && req.body[name] == '100'){
-          changedFields.completed = new Date();
-        } else if (name == 'progress' && req.body[name] !== '100') {
-          changedFields.completed = null;
-        }
-      }
-
-        // TODO: loop through all images
-
-        //if an image is uploaded, save it as well
-        if (img != null) {
-          changedFields.img = img;
-        }
-
-        //add the date for creation
-        changedFields.created = new Date();
-
-        //call the create function for our database
-        mongoose.model('Task').create(changedFields, function (err, task) {
-              if (err) {
-                  res.send("There was a problem adding the information to the database.");
-              } else {
-                  //Task has been created
-                  console.log('POST creating new task: ' + task);
-                  res.format({
-                      //HTML response will set the location and redirect back to the home page. You could also create a 'success' page if that's your thing
-                    html: function(){
-                        // If it worked, set the header so the address bar doesn't still say /adduser
-                        res.location("tasks");
-                        // And forward to success page
-                        res.redirect("/tasks");
-                    },
-                    //JSON response will show the newly created task
-                    json: function(){
-                        res.json(task);
-                    }
-                });
-              }
-        })
+  .get(function(req, res, next) {
+    mongoose.model('Task').find({}, function(err, tasks) {
+      if (err) return next(err);
+      res.format({
+        html: function() { res.render('tasks/index', { title: 'All Tasks', tasks: tasks }); },
+        json: function() { res.json(tasks); }
+      });
     });
+  })
+  .post(function(req, res, next) {
+    var body = req.body;
+    var img = saveUpload(req);
+    var catprefix = (body.catprefix || 'TASK').trim().toUpperCase();
 
-/* GET New Task page. */
-router.get('/new', function(req, res) {
-    res.render('tasks/new', { title: 'Add New Task' });
-});
+    nextSeq(catprefix, function(err, counter) {
+      if (err) return next(err);
 
-/* GET Group view - all tasks for a category prefix */
-router.get('/group/:prefix', function(req, res, next) {
-    var prefix = req.params.prefix;
-    var query = prefix === 'Uncategorized'
-        ? { $or: [{ catprefix: null }, { catprefix: '' }, { catprefix: { $exists: false } }] }
-        : { catprefix: prefix };
+      var fields = {};
+      for (var k in body) fields[k] = body[k];
+      fields.catprefix = catprefix;
+      fields.idincat = counter.seq;
+      fields.created = new Date();
+      if (img) fields.img = img;
+      applyProgressDates(fields);
 
-    mongoose.model('Task').find(query, function(err, tasks) {
-        if (err) return next(err);
-
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
-        var in3days = new Date(today);
-        in3days.setDate(in3days.getDate() + 3);
-
-        var annotated = tasks.map(function(task) {
-            var target = task.target ? new Date(task.target) : null;
-            if (target) target.setHours(0, 0, 0, 0);
-            var isDone = !!task.completed;
-            var urgency = null;
-            if (!isDone && target) {
-                if (target < today) urgency = 'overdue';
-                else if (target.getTime() === today.getTime()) urgency = 'today';
-                else if (target <= in3days && task.priority >= 3) urgency = 'soon';
-            }
-            if (!isDone && !urgency && task.priority >= 4) urgency = 'high';
-
-            var daysUntil = null;
-            if (target && !isDone) {
-                daysUntil = Math.round((target - today) / (1000 * 60 * 60 * 24));
-            }
-
-            return {
-                task: task,
-                urgency: urgency,
-                daysUntil: daysUntil,
-                targetStr: target ? target.toISOString().substring(0, 10) : null
-            };
-        });
-
-        // Sort: overdue first, then by target date, then undated by priority
-        var urgencyOrder = { overdue: 0, today: 1, soon: 2, high: 3 };
-        annotated.sort(function(a, b) {
-            if (a.task.completed && !b.task.completed) return 1;
-            if (!a.task.completed && b.task.completed) return -1;
-            if (a.urgency && !b.urgency) return -1;
-            if (!a.urgency && b.urgency) return 1;
-            if (a.urgency && b.urgency && a.urgency !== b.urgency) {
-                return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
-            }
-            if (a.daysUntil !== null && b.daysUntil !== null) return a.daysUntil - b.daysUntil;
-            return (b.task.priority || 0) - (a.task.priority || 0);
-        });
-
-        res.render('tasks/group', {
-            title: prefix + ' Tasks',
-            prefix: prefix,
-            tasks: annotated
-        });
-    });
-});
-
-// route middleware to validate :id
-router.param('id', function(req, res, next, id) {
-    //console.log('validating ' + id + ' exists');
-    //find the ID in the Database
-    mongoose.model('Task').findById(id, function (err, task) {
-        //if it isn't found, we are going to repond with 404
-        if (err) {
-            console.log(id + ' was not found');
-            res.status(404)
-            var err = new Error('Not Found');
-            err.status = 404;
-            res.format({
-                html: function(){
-                    next(err);
-                 },
-                json: function(){
-                       res.json({message : err.status  + ' ' + err});
-                 }
-            });
-        //if it is found we continue on
-        } else {
-            //uncomment this next line if you want to see every JSON document response for every GET/PUT/DELETE call
-            console.log(task);
-            // once validation is done save the new item in the req
-            req.id = id;
-            // go to the next thing
-            next(); 
-        } 
-    });
-});
-
-router.route('/:id')
-  .get(function(req, res) {
-    mongoose.model('Task').findById(req.id, function (err, task) {
-      if (err) {
-        console.log('GET Error: There was a problem retrieving: ' + err);
-      } else {
-        console.log('GET Retrieving ID: ' + task._id);
-        console.log('For task: ' + task);
-        var taskcreated = task.created.toISOString();
-        taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
-        var tasktarget = task.target.toISOString();
-        tasktarget = tasktarget.substring(0, tasktarget.indexOf('T'));
+      mongoose.model('Task').create(fields, function(err, task) {
+        if (err) return res.send('Error adding task: ' + err);
         res.format({
-          html: function(){
-              res.render('tasks/show', {
-                "taskcreated" : taskcreated,
-                "tasktarget" : tasktarget,
-                "task" : task
-              });
-          },
-          json: function(){
-              res.json(task);
-          }
+          html: function() { res.redirect('/tasks/' + task._id); },
+          json: function() { res.json(task); }
         });
-      }
+      });
     });
   });
 
-router.route('/:id/edit')
-	//GET the individual task by Mongo ID
-	.get(function(req, res) {
-	    //search for the task within Mongo
-	    mongoose.model('Task').findById(req.id, function (err, task) {
-	        if (err) {
-	            console.log('GET Error: There was a problem retrieving: ' + err);
-	        } else {
-	            //Return the task
-	            console.log('GET Retrieving ID: ' + task._id);
-              var taskcreated = task.created.toISOString();
-              taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
-              var tasktarget = task.target.toISOString();
-              tasktarget = tasktarget.substring(0, tasktarget.indexOf('T'));
-	            res.format({
-	                //HTML response will render the 'edit.jade' template
-	                html: function(){
-	                       res.render('tasks/edit', {
-	                          title: 'Task' + task._id,
-                            "taskcreated" : taskcreated,
-                            "tasktarget" : tasktarget,
-	                          "task" : task
-	                      });
-	                 },
-	                 //JSON response will return the JSON output
-	                json: function(){
-	                       res.json(task);
-	                 }
-	            });
-	        }
-	    });
-	})
-	//PUT to update a task by ID
-	.put(function(req, res) {
-      //if image is uploaded
-      console.log(req.files.img);
-      if (req.files.img != undefined) { 
-        var img = req.files.img.name;
-        // TODO: loop through all images
-        //save the image
-        var tmp_path = req.files.img.path;
-        var target_path = './public/images/' + req.files.img.name;
+// ── POST /quick (post-it style) ───────────────────────────────────────────────
 
-        fs.rename(tmp_path, target_path, function(err) {
-          if (err) throw err;
-          // res.send('File uploaded to: ' + target_path + ' - ' + req.files.img.size + 'bytes');
-        });
-      } else { 
-        var img = null;
-      };
-      
-	    // Get our REST or form values. These rely on the "name" attributes
-	    
-      var changedFields = {};
+router.post('/quick', function(req, res, next) {
+  var title = (req.body.title || '').trim();
+  var catprefix = (req.body.catprefix || 'TASK').trim().toUpperCase();
+  var redirectTo = req.body.redirectTo || '/';
 
-      for (var name in req.body) {
-        console.log("-------------");
-        console.log(name + ": " + req.body[name]);
-        changedFields[name] = req.body[name];
-        if (name == 'progress' && req.body[name] == '100'){
-          changedFields.completed = new Date();
-        } else if (name == 'progress' && req.body[name] !== '100') {
-          changedFields.completed = null;
-        }
-      }
+  if (!title) return res.redirect(redirectTo);
 
-      //if an image is uploaded, save it as well
-      if (img != null) {
-        changedFields.img = img;
-      }
-      
-      //update it    
-	    //find the document by ID
-	    mongoose.model('Task').findById(req.id, function (err, task) {
-	        //update it
-	        task.update(changedFields, function (err, taskID) {
-	          if (err) {
-	              res.send("There was a problem updating the information to the database: " + err);
-	          } 
-	          else {
-	                  //HTML responds by going back to the page or you can be fancy and create a new view that shows a success page.
-	                  res.format({
-	                      html: function(){
-	                           res.redirect("/tasks/" + task._id);
-	                     },
-	                     //JSON responds showing the updated values
-	                    json: function(){
-	                           res.json(task);
-	                     }
-	                  });
-	           }
-	        })
-	    });
-	})
-	//DELETE a Task by ID
-	.delete(function (req, res){
-	    //find task by ID
-	    mongoose.model('Task').findById(req.id, function (err, task) {
-	        if (err) {
-	            return console.error(err);
-	        } else {
-	            //remove it from Mongo
-	            task.remove(function (err, task) {
-	                if (err) {
-	                    return console.error(err);
-	                } else {
-	                    //Returning success messages saying it was deleted
-	                    console.log('DELETE removing ID: ' + task._id);
-	                    res.format({
-	                        //HTML returns us back to the main page, or you can create a success page
-	                          html: function(){
-	                               res.redirect("/tasks");
-	                         },
-	                         //JSON returns the item with the message that is has been deleted
-	                        json: function(){
-	                               res.json({message : 'deleted',
-	                                   item : task
-	                               });
-	                         }
-	                      });
-	                }
-	            });
-	        }
-	    });
-	});
+  nextSeq(catprefix, function(err, counter) {
+    if (err) return next(err);
+    mongoose.model('Task').create({
+      title: title,
+      catprefix: catprefix,
+      idincat: counter.seq,
+      created: new Date(),
+      status: 'backlog',
+      progress: 0
+    }, function(err) {
+      if (err) return next(err);
+      res.redirect(redirectTo);
+    });
+  });
+});
+
+// ── GET /new ──────────────────────────────────────────────────────────────────
+
+router.get('/new', function(req, res, next) {
+  mongoose.model('Task').distinct('catprefix', function(err, prefixes) {
+    prefixes = (prefixes || []).filter(Boolean).sort();
+    res.render('tasks/new', { title: 'New Task', prefixes: prefixes });
+  });
+});
+
+// ── GET /group/:prefix ────────────────────────────────────────────────────────
+
+router.get('/group/:prefix', function(req, res, next) {
+  var prefix = req.params.prefix;
+  var query = prefix === 'Uncategorized'
+    ? { $or: [{ catprefix: null }, { catprefix: '' }, { catprefix: { $exists: false } }] }
+    : { catprefix: prefix };
+
+  mongoose.model('Task').find(query, function(err, tasks) {
+    if (err) return next(err);
+
+    var urgencyOrder = { overdue: 0, today: 1, soon: 2, high: 3 };
+    var annotated = tasks.map(annotateUrgency).sort(function(a, b) {
+      if (a.task.completed && !b.task.completed) return 1;
+      if (!a.task.completed && b.task.completed) return -1;
+      if (a.urgency && !b.urgency) return -1;
+      if (!a.urgency && b.urgency) return 1;
+      if (a.urgency && b.urgency && a.urgency !== b.urgency)
+        return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
+      if (a.daysUntil !== null && b.daysUntil !== null) return a.daysUntil - b.daysUntil;
+      return (b.task.priority || 0) - (a.task.priority || 0);
+    });
+
+    res.render('tasks/group', { title: prefix + ' Tasks', prefix: prefix, tasks: annotated });
+  });
+});
+
+// ── :id param validation ──────────────────────────────────────────────────────
+
+router.param('id', function(req, res, next, id) {
+  mongoose.model('Task').findById(id, function(err, task) {
+    if (err) {
+      res.status(404);
+      var e = new Error('Not Found'); e.status = 404;
+      return res.format({
+        html: function() { next(e); },
+        json: function() { res.json({ message: '404 Not Found' }); }
+      });
+    }
+    req.id = id;
+    next();
+  });
+});
+
+// ── GET/DELETE /:id ───────────────────────────────────────────────────────────
+
 router.route('/:id')
-  .get(function(req, res) {
-    mongoose.model('Task').findById(req.id, function (err, task) {
-      if (err) {
-        console.log('GET Error: There was a problem retrieving: ' + err);
-      } else {
-        console.log('GET Retrieving ID: ' + task._id);
-        console.log('For task: ' + task);
-        var taskcreated = task.created.toISOString();
-        taskcreated = taskcreated.substring(0, taskcreated.indexOf('T'));
-        var tasktarget = task.target.toISOString();
-        tasktarget = tasktarget.substring(0, tasktarget.indexOf('T'));
+  .get(function(req, res, next) {
+    mongoose.model('Task').findById(req.id, function(err, task) {
+      if (err) return next(err);
+      var today = new Date(); today.setHours(0,0,0,0);
+      var target = task.target ? new Date(task.target) : null;
+      if (target) target.setHours(0,0,0,0);
+      var daysUntil = (target && !task.completed) ? Math.round((target - today) / 86400000) : null;
+      res.format({
+        html: function() {
+          res.render('tasks/show', {
+            task: task,
+            createdStr: task.created ? task.created.toISOString().substring(0, 10) : '',
+            targetStr:  target ? target.toISOString().substring(0, 10) : '',
+            completedStr: task.completed ? task.completed.toISOString().substring(0, 10) : '',
+            daysUntil: daysUntil,
+            padId: padId
+          });
+        },
+        json: function() { res.json(task); }
+      });
+    });
+  })
+  .delete(function(req, res, next) {
+    mongoose.model('Task').findById(req.id, function(err, task) {
+      if (err) return next(err);
+      task.remove(function(err) {
+        if (err) return next(err);
         res.format({
-          html: function(){
-              res.render('tasks/show', {
-                "taskcreated" : taskcreated,
-                "tasktarget" : tasktarget,
-                "task" : task
-              });
-          },
-          json: function(){
-              res.json(task);
-          }
+          html: function() { res.redirect('/'); },
+          json: function() { res.json({ message: 'deleted', item: task }); }
         });
-      }
+      });
+    });
+  });
+
+// ── GET/PUT /:id/edit ─────────────────────────────────────────────────────────
+
+router.route('/:id/edit')
+  .get(function(req, res, next) {
+    mongoose.model('Task').findById(req.id, function(err, task) {
+      if (err) return next(err);
+      var target = task.target ? new Date(task.target) : null;
+      mongoose.model('Task').distinct('catprefix', function(err2, prefixes) {
+        prefixes = (prefixes || []).filter(Boolean).sort();
+        res.format({
+          html: function() {
+            res.render('tasks/edit', {
+              title: 'Edit Task',
+              task: task,
+              targetStr: target ? target.toISOString().substring(0, 10) : '',
+              prefixes: prefixes,
+              padId: padId
+            });
+          },
+          json: function() { res.json(task); }
+        });
+      });
+    });
+  })
+  .put(function(req, res, next) {
+    var body = req.body;
+    var img = saveUpload(req);
+
+    var fields = {};
+    for (var k in body) fields[k] = body[k];
+    if (img) fields.img = img;
+    fields.updated = new Date();
+    applyProgressDates(fields);
+
+    mongoose.model('Task').findById(req.id, function(err, task) {
+      if (err) return next(err);
+      task.update(fields, function(err) {
+        if (err) return res.send('Error updating: ' + err);
+        res.format({
+          html: function() { res.redirect('/tasks/' + task._id); },
+          json: function() { res.json(task); }
+        });
+      });
     });
   });
 

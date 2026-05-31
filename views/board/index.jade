@@ -1,0 +1,31 @@
+extends ../layout
+
+block content
+  .page-header
+    h1 Board
+    a.btn-primary(href='/tasks/new') + New Task
+
+  .board
+    each col in columns
+      .board-col
+        .board-col-header
+          span= col.label
+          span.board-col-count= col.cards.length
+
+        if col.cards.length === 0
+          p.board-empty No tasks
+        else
+          each item in col.cards
+            a.task-card(href='/tasks/' + item.task._id)
+              .task-card-id
+                if item.task.catprefix && item.task.idincat
+                  = item.task.catprefix + '-' + String(item.task.idincat).padStart(3,'0')
+              .task-card-title= item.task.title || '(untitled)'
+              .task-card-meta
+                if item.task.priority
+                  span.priority-pip(class='pri-' + item.task.priority) P#{item.task.priority}
+                if item.targetStr
+                  span.card-date(class=item.isOverdue ? 'overdue-text' : '')= item.targetStr
+                if item.task.progress > 0
+                  .mini-bar.card-bar
+                    .mini-fill(style='width:' + item.task.progress + '%')

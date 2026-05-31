@@ -3,13 +3,23 @@ extends layout
 block content
   .dashboard
 
+    //- QUICK ADD
+    form.quick-add(action='/tasks/quick', method='post')
+      input(type='hidden', name='redirectTo', value='/')
+      input.quick-add-input(type='text', name='title', placeholder='Add a task... just type and press Enter', autocomplete='off', autofocus)
+      input.quick-add-prefix(type='text', name='catprefix', placeholder='Group', list='prefix-list', autocomplete='off')
+      datalist#prefix-list
+        each p in prefixes
+          option(value=p)
+      button.quick-add-btn(type='submit') Add
+
     //- TODAY'S FOCUS
     section.focus-section
       h2.section-title
         span.section-icon ◎
         | Today's Focus
       if focusTasks.length === 0
-        p.empty-state No urgent tasks — you're on track.
+        p.empty-state You're on track — nothing urgent today.
       else
         ul.focus-list
           each item in focusTasks
@@ -24,15 +34,18 @@ block content
                     | SOON
                   else
                     | HIGH PRI
-                a.focus-title(href='/tasks/' + item.task._id)= (item.task.catprefix ? item.task.catprefix + '-' + item.task.idincat + ': ' : '') + item.task.title
+                a.focus-title(href='/tasks/' + item.task._id)
+                  if item.task.catprefix && item.task.idincat
+                    span.focus-id= item.task.catprefix + '-' + String(item.task.idincat).padStart(3,'0') + ' '
+                  = item.task.title
               .focus-right
                 if item.task.target
-                  span.focus-date= item.task.target.toISOString().substring(0, 10)
+                  span.focus-date= item.task.target.toISOString().substring(0,10)
                 if item.task.progress
-                  span.focus-progress
-                    span.progress-bar
-                      span.progress-fill(style='width:' + item.task.progress + '%')
-                    span.progress-pct= item.task.progress + '%'
+                  .focus-progress
+                    .mini-bar
+                      .mini-fill(style='width:' + item.task.progress + '%')
+                    span.mini-pct= item.task.progress + '%'
 
     //- GROUP CARDS
     section.groups-section
@@ -40,7 +53,7 @@ block content
         span.section-icon ▦
         | Task Groups
       if groups.length === 0
-        p.empty-state No tasks yet. #[a(href='/tasks/new') Add your first task.]
+        p.empty-state No tasks yet — add your first one above.
       else
         .group-grid
           each group in groups
@@ -59,4 +72,4 @@ block content
                     span.stat-label  overdue
               .group-bar
                 span.group-bar-fill(style='width:' + (group.total > 0 ? Math.round(group.done / group.total * 100) : 0) + '%')
-              .group-pct= group.total > 0 ? Math.round(group.done / group.total * 100) + '% done' : 'no tasks'
+              .group-pct= group.total > 0 ? Math.round(group.done / group.total * 100) + '% done' : '—'

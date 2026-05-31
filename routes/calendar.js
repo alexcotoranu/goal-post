@@ -1,119 +1,78 @@
 var express = require('express');
 var router = express.Router();
-var mongoose = require('mongoose'); //mongo connection
-var moment = require('moment');
+var mongoose = require('mongoose');
 
+var MONTH_NAMES = ['January','February','March','April','May','June',
+                   'July','August','September','October','November','December'];
+var DAY_NAMES   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* GET calendar page. */
+router.get('/', function(req, res) {
+  var now = new Date();
+  res.redirect('/calendar/' + now.getFullYear() + '/' + (now.getMonth() + 1));
+});
 
-router.route('/:year/:month')
-  .get(function(req, res) {
+router.get('/:year/:month', function(req, res, next) {
+  var year  = parseInt(req.params.year,  10);
+  var month = parseInt(req.params.month, 10); // 1-based
 
-    function daysInMonth(month,year){
-      return new Date(year, month, 0).getDate();
-    }
+  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+    var now = new Date();
+    return res.redirect('/calendar/' + now.getFullYear() + '/' + (now.getMonth() + 1));
+  }
 
-    month_labels = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var minDate    = new Date(year, month - 1, 1);
+  var nextMonthStart = new Date(year, month, 1);
 
-    day_labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var prevD = new Date(year, month - 2, 1);
+  var nextD = new Date(year, month,     1);
 
-    // console.log(req.params.year + '-' + req.params.month);
-    
-    // var calDate = req.params.year + '-' + req.params.month;
-    var lastDay = daysInMonth(req.params.month,req.params.year);
-    if (lastDay < 10) {
-        lastDay = '0'+lastDay;
-    }
+  // Tasks with target date in this month
+  mongoose.model('Task').find({
+    target: { $gte: minDate, $lt: nextMonthStart }
+  }, function(err, tasks) {
+    if (err) return next(err);
 
-    var minDate = new Date(req.params.year, req.params.month-1, 1);
-    var maxDate = new Date(req.params.year, req.params.month-1, lastDay);
+    var today = new Date(); today.setHours(0, 0, 0, 0);
 
-    console.log(lastDay);
-    console.log(minDate);
-    console.log(maxDate);
-
-    // res.send('Calendar');
-
-    var a = moment(req.params.year + '-' + req.params.month + '-01T00:00:00');
-    var b = moment(req.params.year + '-' + req.params.month + '-' + lastDay + 'T23:59:59');
-
-    var calDays = {};
-
-    console.log(a);
-    var firstDay = a.format('E');
-
-    for (var m = a; m.isBefore(b); m.add(1,'days')) {
-        var dayInMonth = m.format('DD');
-        var dayInCal = Number(dayInMonth) + Number(firstDay);
-        calDays["day"+dayInCal] = dayInMonth;
-    }
-
-    console.log(calDays);
-
-    // res.format({
-    //   html: function(){
-    //       res.render('calendar', {
-    //         "cal" : calDays
-    //       });
-    //   },
-    //   json: function(){
-    //       res.json(calDays);
-    //   }
-    // });
-
-    mongoose.model('Task').find({"created": {"$gte": minDate, "$lt": maxDate}}, function(err, tasks){
-        if (err) {
-            console.log("Tasks:" + tasks);
-            console.log('GET Error: There was a problem finding tasks: ' + err);
-        } else {
-            console.log("Tasks:" + tasks);
-            console.log("Days:" + calDays);
-            res.format({
-              html: function(){
-                  res.render('calendar', {
-                    "tasks" : tasks,
-                    "cal" : calDays
-                  });
-              },
-              json: function(){
-                  res.json(tasks,calDays);
-              }
-            });
-        }
+    // Map day → tasks
+    var dayMap = {};
+    tasks.forEach(function(task) {
+      var d = new Date(task.target).getDate();
+      if (!dayMap[d]) dayMap[d] = [];
+      dayMap[d].push(task);
     });
 
+    // Calendar grid (Mon-first)
+    var firstDow = minDate.getDay(); // 0=Sun
+    var offset   = firstDow === 0 ? 6 : firstDow - 1; // Mon=0
 
+    var totalDays = new Date(year, month, 0).getDate();
+    var cells = [];
 
-    // .where('progress').equals('100')
-    //.select('catprefix idincat').exec(function (err, tasks) {
-    //     if (err) {
-    //         console.log("Tasks:" + tasks);
-    //         console.log("Request: " + req);
-    //         console.log('GET Error: There was a problem finding tasks: ' + err);
-    //     } else {
-    //         console.log("Tasks:" + tasks);
-    //         console.log("Request: " + req);
-    //         res.format({
-    //           html: function(){
-    //               res.render('calendar', {
-    //                 "tasks" : tasks
-    //               });
-    //           },
-    //           json: function(){
-    //               res.json(tasks);
-    //           }
-    //         });
-    //     }
-    // });
-    
+    for (var i = 0; i < offset; i++) cells.push(null);
+    for (var d = 1; d <= totalDays; d++) {
+      var cellDate = new Date(year, month - 1, d);
+      cellDate.setHours(0, 0, 0, 0);
+      cells.push({ day: d, isToday: cellDate.getTime() === today.getTime(), tasks: dayMap[d] || [] });
+    }
+    while (cells.length % 7 !== 0) cells.push(null);
 
-    // function renderTasks(){
-    //     console.log("render tasks...");
-    // }
+    var weeks = [];
+    for (var w = 0; w < cells.length; w += 7) weeks.push(cells.slice(w, w + 7));
 
-    // console.log(req.year);
-    // console.log(req.month);
-    
+    res.render('calendar/index', {
+      title:     MONTH_NAMES[month - 1] + ' ' + year,
+      monthName: MONTH_NAMES[month - 1],
+      year:  year,
+      month: month,
+      weeks: weeks,
+      dayNames: DAY_NAMES,
+      prevYear:  prevD.getFullYear(),
+      prevMonth: prevD.getMonth() + 1,
+      nextYear:  nextD.getFullYear(),
+      nextMonth: nextD.getMonth() + 1
+    });
   });
+});
 
 module.exports = router;

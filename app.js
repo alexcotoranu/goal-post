@@ -10,12 +10,15 @@ var moment = require('moment');
 var db = require('./model/db');
 var blob = require('./model/blobs');
 var task = require('./model/tasks');
+var counter = require('./model/counter');
 
 var routes = require('./routes/index');
 var blobs = require('./routes/blobs');
 var tasks = require('./routes/tasks');
 var users = require('./routes/users');
 var calendar = require('./routes/calendar');
+var board = require('./routes/board');
+var roadmap = require('./routes/roadmap');
 
 var app = express();
 
@@ -47,6 +50,8 @@ app.use('/', routes);
 app.use('/blobs', blobs);
 app.use('/tasks', tasks);
 app.use('/calendar', calendar);
+app.use('/board', board);
+app.use('/roadmap', roadmap);
 app.use('/users', users);
 
 // catch 404 and forward to error handler

@@ -1,0 +1,39 @@
+extends ../layout
+
+block content
+  .page-header
+    h1 Roadmap
+    a.btn-primary(href='/tasks/new') + New Task
+
+  if groups.length === 0
+    p.empty-state No tasks with target dates yet. #[a(href='/tasks/new') Add one.]
+  else
+    .roadmap
+      //- Header row: month labels
+      .roadmap-header
+        .roadmap-label-col
+        .roadmap-timeline-area
+          each m in months
+            .roadmap-month-label(style='left:' + m.left + '%;width:' + m.width + '%')= m.label
+
+      //- Today marker (rendered as overlay on bars)
+      .roadmap-body
+        each group in groups
+          .roadmap-group
+            .roadmap-group-row
+              .roadmap-group-name= group.prefix
+              .roadmap-bar-area
+                .today-marker(style='left:' + todayPct + '%', title='Today')
+
+            each item in group.rows
+              .roadmap-row
+                .roadmap-row-label
+                  a(href='/tasks/' + item.task._id, title=item.label)= item.label
+                .roadmap-bar-area
+                  .today-marker(style='left:' + todayPct + '%')
+                  a.roadmap-bar(
+                    href='/tasks/' + item.task._id,
+                    style='left:' + item.left + '%;width:' + item.width + '%',
+                    class=(item.isDone ? 'bar-done' : item.isOverdue ? 'bar-overdue' : ''),
+                    title=item.label
+                  )

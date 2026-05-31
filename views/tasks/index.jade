@@ -1,32 +1,44 @@
 extends ../layout
 
 block content
-    h1.
-         #{title}
-    ul
-        - each task, i in tasks
-            li
-                -if (task.completed !== null && typeof(task.completed) !== 'undefined'){
-                    p(class='task-complete') Complete 
-                -}
-                a(href='/tasks/#{task._id}') #{task.catprefix} - #{task.idincat}
-                -if (task.target !== undefined){
-                    p Target Date: #{task.target}
-                -}
-                -if (task.completed !== null){
-                    p Date Completed: #{task.completed}
-                -}
-                p #{task.title}
-                p #{task.created}
-                -if (typeof(task.img) !== 'undefined'){
-                    img(src="../images/" + task.img)
-                -}  
-                //- TODO: make this loop and show all the images
-                form(action='/tasks/#{task._id}/edit',method='post',enctype='application/x-www-form-urlencoded')
-                    input(type='hidden',value='DELETE',name='_method')
-                    button(type='submit').
-                        Delete
-                p 
-                    a(href='/tasks/#{task._id}/edit') Edit
-                p
-                     Show
+  .page-header
+    h1 All Tasks
+    a.btn-primary(href='/tasks/new') + New Task
+
+  if tasks.length === 0
+    p.empty-state No tasks yet. #[a(href='/tasks/new') Create one.]
+  else
+    table.tasks-table
+      thead
+        tr
+          th ID
+          th Title
+          th Group
+          th Status
+          th Priority
+          th Target
+          th Progress
+          th
+      tbody
+        each task in tasks
+          tr(class=task.completed ? 'row-done' : '')
+            td.col-id
+              a(href='/tasks/' + task._id)
+                if task.catprefix && task.idincat
+                  = task.catprefix + '-' + String(task.idincat).padStart(3,'0')
+                else
+                  | —
+            td.col-title
+              a(href='/tasks/' + task._id)= task.title || '(untitled)'
+            td= task.catprefix || '—'
+            td
+              span.status-chip(class='status-' + (task.status || 'backlog'))= task.status || 'backlog'
+            td.col-center= task.priority ? 'P' + task.priority : '—'
+            td.col-date= task.target ? task.target.toISOString().substring(0,10) : '—'
+            td.col-prog
+              if task.progress !== undefined && task.progress !== null
+                .mini-bar
+                  .mini-fill(style='width:' + task.progress + '%')
+                span.mini-pct= task.progress + '%'
+            td.col-actions
+              a(href='/tasks/' + task._id + '/edit') Edit
